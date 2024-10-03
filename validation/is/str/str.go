@@ -29,6 +29,7 @@ var (
 	ErrIPv4           = validation.NewRuleError("is_ipv4", "must be a valid IPv4 address")
 	ErrIPv6           = validation.NewRuleError("is_ipv6", "must be a valid IPv6 address")
 	ErrDNSName        = validation.NewRuleError("is_dns_name", "must be a valid DNS name")
+	ErrAddrPort       = validation.NewRuleError("is_addr_port", "must be a valid address with port")
 	ErrCIDR           = validation.NewRuleError("is_cidr", "must be a valid CIDR")
 	ErrHost           = validation.NewRuleError("is_host", "must be a valid IP address or DNS name")
 	ErrPort           = validation.NewRuleError("is_port", "must be a valid port number")
@@ -158,7 +159,7 @@ func IPv6[T ~string](v T) error {
 }
 
 func DNSName[T ~string](v T) error {
-	if v == "" || len(strings.Replace(string(v), ".", "", -1)) > 255 {
+	if v == "" || len(strings.ReplaceAll(string(v), ".", "")) > 255 {
 		return ErrDNSName
 	}
 	if IP(v) != nil && !rxDNSName.MatchString(string(v)) {
@@ -178,6 +179,13 @@ func Port[T ~string](v T) error {
 	i, err := strconv.Atoi(string(v))
 	if err != nil || i <= 0 || i >= 65536 {
 		return ErrPort
+	}
+	return nil
+}
+
+func AddrPort[T ~string](v T) error {
+	if _, err := netip.ParseAddrPort(string(v)); err != nil {
+		return ErrAddrPort
 	}
 	return nil
 }
