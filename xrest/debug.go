@@ -6,8 +6,9 @@ import (
 	"strings"
 )
 
-func Debug(prefix string) http.Handler {
-	return http.StripPrefix(prefix, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func Debug(prefix string) (string, http.Handler) {
+	pattern, prefix := muxPrefix(prefix)
+	return pattern, http.StripPrefix(prefix, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			http.Error(w, "405 method not allowed", http.StatusMethodNotAllowed)
 			return

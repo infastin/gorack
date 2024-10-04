@@ -22,11 +22,11 @@ var DefaultConfig = CORSConfig{
 	},
 }
 
-func CORS() func(next http.Handler) http.Handler {
+func CORS() Middleware {
 	return CORSWithConfig(DefaultConfig)
 }
 
-func CORSWithConfig(config CORSConfig) func(next http.Handler) http.Handler {
+func CORSWithConfig(config CORSConfig) Middleware {
 	if config.AllowOrigin == "" {
 		config.AllowOrigin = DefaultConfig.AllowOrigin
 	}

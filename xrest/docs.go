@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"html/template"
 	"net/http"
+	"path"
 	"time"
 )
 
@@ -19,17 +20,18 @@ var docsTemplateSrc string
 
 var docsTemplate = template.Must(template.New("").Parse(docsTemplateSrc))
 
-func Documentation(name, prefix string, spec []byte) http.Handler {
-	var index bytes.Buffer
+func Documentation(name, root, prefix string, spec []byte) (string, http.Handler) {
+	pattern, prefix := muxPrefix(prefix)
 
+	var index bytes.Buffer
 	if err := docsTemplate.Execute(&index, map[string]string{
 		"Name":   name,
-		"Prefix": prefix,
+		"Prefix": path.Join(root, prefix),
 	}); err != nil {
-		panic(err)
+		panic("could not execute template: " + err.Error())
 	}
 
-	return http.StripPrefix(prefix, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return pattern, http.StripPrefix(prefix, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			http.Error(w, "405 method not allowed", http.StatusMethodNotAllowed)
 			return

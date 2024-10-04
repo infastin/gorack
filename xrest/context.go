@@ -20,7 +20,7 @@ func (c *context) Value(key any) any {
 	return c.Context.Value(key)
 }
 
-func Context() func(next http.Handler) http.Handler {
+func Context() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			next.ServeHTTP(w, r.WithContext(&context{
