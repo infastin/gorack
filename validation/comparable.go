@@ -101,14 +101,14 @@ func (cv ComparableValidator[T]) NotIn(elements ...T) ComparableValidator[T] {
 
 func (cv ComparableValidator[T]) Equal(v T) ComparableValidator[T] {
 	if cv.scope.Ok() {
-		cv.rules = append(cv.rules, Equal[T](v))
+		cv.rules = append(cv.rules, Equal(v))
 	}
 	return cv
 }
 
 func (cv ComparableValidator[T]) With(fns ...func(v T) error) ComparableValidator[T] {
 	if cv.scope.Ok() {
-		slices.Grow(cv.rules, len(fns))
+		cv.rules = slices.Grow(cv.rules, len(fns))
 		for _, fn := range fns {
 			cv.rules = append(cv.rules, ComparableRuleFunc[T](fn))
 		}

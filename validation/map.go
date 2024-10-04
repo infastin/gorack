@@ -122,7 +122,7 @@ func (mv MapValidator[T]) Length(min, max int) MapValidator[T] {
 
 func (mv MapValidator[T]) With(fns ...func(s map[string]T) error) MapValidator[T] {
 	if mv.scope.Ok() {
-		slices.Grow(mv.rules, len(fns))
+		mv.rules = slices.Grow(mv.rules, len(fns))
 		for _, fn := range fns {
 			mv.rules = append(mv.rules, MapRuleFunc[T](fn))
 		}

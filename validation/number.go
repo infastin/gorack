@@ -154,7 +154,7 @@ func (nv NumberValidator[T]) BetweenEqual(a, b T) NumberValidator[T] {
 
 func (nv NumberValidator[T]) With(fns ...func(n T) error) NumberValidator[T] {
 	if nv.scope.Ok() {
-		slices.Grow(nv.rules, len(fns))
+		nv.rules = slices.Grow(nv.rules, len(fns))
 		for _, fn := range fns {
 			nv.rules = append(nv.rules, NumberRuleFunc[T](fn))
 		}

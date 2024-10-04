@@ -101,56 +101,56 @@ func (av AnyValidator[T]) NotIn(eq func(a, b T) bool, elements ...T) AnyValidato
 
 func (av AnyValidator[T]) Equal(eq func(a, b T) bool, v T) AnyValidator[T] {
 	if av.scope.Ok() {
-		av.rules = append(av.rules, EqualAny[T](eq, v))
+		av.rules = append(av.rules, EqualAny(eq, v))
 	}
 	return av
 }
 
 func (av AnyValidator[T]) Less(cmp func(a, b T) int, v T) AnyValidator[T] {
 	if av.scope.Ok() {
-		av.rules = append(av.rules, LessAny[T](cmp, v))
+		av.rules = append(av.rules, LessAny(cmp, v))
 	}
 	return av
 }
 
 func (av AnyValidator[T]) LessEqual(cmp func(a, b T) int, v T) AnyValidator[T] {
 	if av.scope.Ok() {
-		av.rules = append(av.rules, LessEqualAny[T](cmp, v))
+		av.rules = append(av.rules, LessEqualAny(cmp, v))
 	}
 	return av
 }
 
 func (av AnyValidator[T]) Greater(cmp func(a, b T) int, v T) AnyValidator[T] {
 	if av.scope.Ok() {
-		av.rules = append(av.rules, GreaterAny[T](cmp, v))
+		av.rules = append(av.rules, GreaterAny(cmp, v))
 	}
 	return av
 }
 
 func (av AnyValidator[T]) GreaterEqual(cmp func(a, b T) int, v T) AnyValidator[T] {
 	if av.scope.Ok() {
-		av.rules = append(av.rules, GreaterEqualAny[T](cmp, v))
+		av.rules = append(av.rules, GreaterEqualAny(cmp, v))
 	}
 	return av
 }
 
 func (av AnyValidator[T]) Between(cmp func(a, b T) int, a, b T) AnyValidator[T] {
 	if av.scope.Ok() {
-		av.rules = append(av.rules, BetweenAny[T](cmp, a, b))
+		av.rules = append(av.rules, BetweenAny(cmp, a, b))
 	}
 	return av
 }
 
 func (av AnyValidator[T]) BetweenEqual(cmp func(a, b T) int, a, b T) AnyValidator[T] {
 	if av.scope.Ok() {
-		av.rules = append(av.rules, BetweenEqualAny[T](cmp, a, b))
+		av.rules = append(av.rules, BetweenEqualAny(cmp, a, b))
 	}
 	return av
 }
 
 func (av AnyValidator[T]) With(fns ...func(v T) error) AnyValidator[T] {
 	if av.scope.Ok() {
-		slices.Grow(av.rules, len(fns))
+		av.rules = slices.Grow(av.rules, len(fns))
 		for _, fn := range fns {
 			av.rules = append(av.rules, AnyRuleFunc[T](fn))
 		}

@@ -94,7 +94,7 @@ func (pv PtrValidator[T]) Nil(condition bool) PtrValidator[T] {
 
 func (pv PtrValidator[T]) With(fns ...func(p *T) error) PtrValidator[T] {
 	if pv.scope.Ok() {
-		slices.Grow(pv.rules, len(fns))
+		pv.rules = slices.Grow(pv.rules, len(fns))
 		for _, fn := range fns {
 			pv.rules = append(pv.rules, PtrRuleFunc[T](fn))
 		}

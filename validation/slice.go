@@ -122,7 +122,7 @@ func (sv SliceValidator[T]) Length(min, max int) SliceValidator[T] {
 
 func (sv SliceValidator[T]) With(fns ...func(s []T) error) SliceValidator[T] {
 	if sv.scope.Ok() {
-		slices.Grow(sv.rules, len(fns))
+		sv.rules = slices.Grow(sv.rules, len(fns))
 		for _, fn := range fns {
 			sv.rules = append(sv.rules, SliceRuleFunc[T](fn))
 		}

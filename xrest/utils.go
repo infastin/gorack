@@ -1,12 +1,13 @@
 package xrest
 
 import (
-	"path"
-	"strings"
+	"net/url"
 )
 
-func muxPrefix(prefix string) (pattern, strip string) {
-	pattern = path.Clean(prefix) + "/"
-	strip = strings.TrimRight(pattern, "/")
-	return pattern, strip
+func muxPrefix(prefix string) (pattern, strip string, err error) {
+	pattern, err = url.JoinPath("/", prefix, "/")
+	if err != nil {
+		return "", "", err
+	}
+	return pattern, pattern[:len(pattern)-1], nil
 }

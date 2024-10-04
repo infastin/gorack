@@ -153,7 +153,7 @@ func (tv TimeValidator) BetweenEqual(a, b time.Time) TimeValidator {
 
 func (tv TimeValidator) With(fns ...func(v time.Time) error) TimeValidator {
 	if tv.scope.Ok() {
-		slices.Grow(tv.rules, len(fns))
+		tv.rules = slices.Grow(tv.rules, len(fns))
 		for _, fn := range fns {
 			tv.rules = append(tv.rules, TimeRuleFunc(fn))
 		}

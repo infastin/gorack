@@ -5,6 +5,9 @@ import (
 )
 
 func Group(prefix string, fn func() http.Handler) (string, http.Handler) {
-	pattern, prefix := muxPrefix(prefix)
-	return pattern, http.StripPrefix(prefix, fn())
+	pattern, strip, err := muxPrefix(prefix)
+	if err != nil {
+		panic("invalid prefix: " + err.Error())
+	}
+	return pattern, http.StripPrefix(strip, fn())
 }

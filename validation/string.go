@@ -157,7 +157,7 @@ func (sv StringValidator[T]) BetweenEqual(a, b T) StringValidator[T] {
 
 func (sv StringValidator[T]) With(fns ...func(s T) error) StringValidator[T] {
 	if sv.scope.Ok() {
-		slices.Grow(sv.rules, len(fns))
+		sv.rules = slices.Grow(sv.rules, len(fns))
 		for _, fn := range fns {
 			sv.rules = append(sv.rules, StringRuleFunc[T](fn))
 		}
