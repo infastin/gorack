@@ -87,6 +87,9 @@ func (v *NullBool[T]) UnmarshalJSON(data []byte) error {
 }
 
 func (v NullBool[T]) MarshalText() ([]byte, error) {
+	if !v.Valid {
+		return []byte{}, nil
+	}
 	return strconv.AppendBool(nil, bool(v.Value)), nil
 }
 
@@ -186,6 +189,9 @@ func (v *ZeroBool[T]) UnmarshalJSON(data []byte) error {
 }
 
 func (v ZeroBool[T]) MarshalText() ([]byte, error) {
+	if !v.Valid {
+		return []byte{}, nil
+	}
 	return strconv.AppendBool(nil, bool(v.Value)), nil
 }
 

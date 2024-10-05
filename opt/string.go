@@ -86,6 +86,9 @@ func (v *NullString[T]) UnmarshalJSON(data []byte) error {
 }
 
 func (v NullString[T]) MarshalText() ([]byte, error) {
+	if !v.Valid {
+		return []byte{}, nil
+	}
 	return fastconv.Bytes(string(v.Value)), nil
 }
 
@@ -180,6 +183,9 @@ func (v *ZeroString[T]) UnmarshalJSON(data []byte) error {
 }
 
 func (v ZeroString[T]) MarshalText() ([]byte, error) {
+	if !v.Valid {
+		return []byte{}, nil
+	}
 	return fastconv.Bytes(string(v.Value)), nil
 }
 

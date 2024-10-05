@@ -88,6 +88,9 @@ func (v *NullFloat[T]) UnmarshalJSON(data []byte) error {
 }
 
 func (v NullFloat[T]) MarshalText() ([]byte, error) {
+	if !v.Valid {
+		return []byte{}, nil
+	}
 	return strconv.AppendFloat(nil, float64(v.Value), 'f', -1, 64), nil
 }
 
@@ -187,6 +190,9 @@ func (v *ZeroFloat[T]) UnmarshalJSON(data []byte) error {
 }
 
 func (v ZeroFloat[T]) MarshalText() ([]byte, error) {
+	if !v.Valid {
+		return []byte{}, nil
+	}
 	return strconv.AppendFloat(nil, float64(v.Value), 'f', -1, 64), nil
 }
 

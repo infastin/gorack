@@ -106,6 +106,9 @@ func (v *NullInt[T]) UnmarshalJSON(data []byte) error {
 }
 
 func (v NullInt[T]) MarshalText() ([]byte, error) {
+	if !v.Valid {
+		return []byte{}, nil
+	}
 	return strconv.AppendInt(nil, int64(v.Value), 10), nil
 }
 
@@ -223,6 +226,9 @@ func (v *ZeroInt[T]) UnmarshalJSON(data []byte) error {
 }
 
 func (v ZeroInt[T]) MarshalText() ([]byte, error) {
+	if !v.Valid {
+		return []byte{}, nil
+	}
 	return strconv.AppendInt(nil, int64(v.Value), 10), nil
 }
 
