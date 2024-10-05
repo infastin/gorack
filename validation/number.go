@@ -3,7 +3,7 @@ package validation
 import (
 	"slices"
 
-	"github.com/infastin/gorack/validation/constraints"
+	"github.com/infastin/gorack/constraints"
 )
 
 type numberValidatorData[T constraints.Number] struct {

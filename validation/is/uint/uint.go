@@ -1,8 +1,8 @@
 package isuint
 
 import (
+	"github.com/infastin/gorack/constraints"
 	"github.com/infastin/gorack/validation"
-	"github.com/infastin/gorack/validation/constraints"
 )
 
 var (
