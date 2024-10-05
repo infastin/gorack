@@ -4,7 +4,7 @@ import (
 	"cmp"
 	"slices"
 
-	"github.com/infastin/go-rack/xalg"
+	"github.com/infastin/gorack/xalg"
 )
 
 func Union[E cmp.Ordered](s1, s2 []E) []E {

@@ -1,6 +1,6 @@
 # Golang utilities
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/infastin/go-rack.svg)](https://pkg.go.dev/github.com/infastin/go-rack)
+[![Go Reference](https://pkg.go.dev/badge/github.com/infastin/gorack.svg)](https://pkg.go.dev/github.com/infastin/gorack)
 
 ## Description
 

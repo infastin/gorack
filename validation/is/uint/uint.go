@@ -1,8 +1,8 @@
 package isuint
 
 import (
-	"github.com/infastin/go-rack/validation"
-	"github.com/infastin/go-rack/validation/constraints"
+	"github.com/infastin/gorack/validation"
+	"github.com/infastin/gorack/validation/constraints"
 )
 
 var (

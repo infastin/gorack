@@ -3,7 +3,7 @@ package validation_test
 import (
 	"testing"
 
-	"github.com/infastin/go-rack/validation"
+	"github.com/infastin/gorack/validation"
 )
 
 func Test_LengthString_Validate(t *testing.T) {

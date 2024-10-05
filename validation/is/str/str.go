@@ -11,7 +11,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/infastin/go-rack/validation"
+	"github.com/infastin/gorack/validation"
 )
 
 var (

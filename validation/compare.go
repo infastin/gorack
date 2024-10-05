@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/infastin/go-rack/validation/constraints"
+	"github.com/infastin/gorack/validation/constraints"
 )
 
 type compareRule[T any] struct {

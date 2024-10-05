@@ -3,7 +3,7 @@ package validation
 import (
 	"time"
 
-	"github.com/infastin/go-rack/validation/constraints"
+	"github.com/infastin/gorack/validation/constraints"
 )
 
 type Validatable interface {

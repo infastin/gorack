@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/infastin/go-rack/validation"
+	"github.com/infastin/gorack/validation"
 )
 
 func Test_ruleError_Error(t *testing.T) {

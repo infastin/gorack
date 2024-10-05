@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/infastin/go-rack/validation"
+	"github.com/infastin/gorack/validation"
 )
 
 type GeneralInfo struct {

@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/infastin/go-rack/validation"
-	"github.com/infastin/go-rack/validation/is/int"
-	"github.com/infastin/go-rack/validation/is/str"
+	"github.com/infastin/gorack/validation"
+	"github.com/infastin/gorack/validation/is/int"
+	"github.com/infastin/gorack/validation/is/str"
 )
 
 type Config struct {

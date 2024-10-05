@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/infastin/go-rack/shot"
+	"github.com/infastin/gorack/shot"
 )
 
 type XorExample struct {
