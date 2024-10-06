@@ -2,6 +2,7 @@ package xrest
 
 import (
 	"encoding"
+	"errors"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -38,13 +39,16 @@ func (e *BindQueryTypeError) Error() string {
 }
 
 type BindQueryValueError struct {
-	Type  reflect.Type
+	Name  string
 	Value string
 	Err   error
 }
 
 func (e *BindQueryValueError) Error() string {
-	return "query: cannot decode " + strconv.Quote(e.Value) + " into " + e.Type.String() + ": " + e.Err.Error()
+	if numError := (*strconv.NumError)(nil); errors.As(e.Err, &numError) {
+		return "query: " + strconv.Quote(e.Name) + ": cannot decode " + strconv.Quote(e.Value) + ": " + numError.Err.Error()
+	}
+	return "query: " + strconv.Quote(e.Name) + ": cannot decode " + strconv.Quote(e.Value) + ": " + e.Err.Error()
 }
 
 func (e *BindQueryValueError) Unwrap() error {
@@ -77,14 +81,15 @@ type queryDecoder struct {
 	outType   reflect.Type
 	fieldType reflect.StructField
 	field     reflect.Value
+	name      string
 }
 
 func (d *queryDecoder) decode() error {
 	for i := range d.outType.NumField() {
 		d.fieldType = d.outType.Field(i)
 
-		tag := d.fieldType.Tag.Get("query")
-		if tag == "" || !d.query.Has(tag) {
+		d.name = d.fieldType.Tag.Get("query")
+		if d.name == "" || !d.query.Has(d.name) {
 			continue
 		}
 
@@ -100,15 +105,15 @@ func (d *queryDecoder) decode() error {
 			}
 		}
 		if unmarshaler != nil {
-			if err := unmarshaler.UnmarshalText(fastconv.Bytes(d.query.Get(tag))); err != nil {
-				return &BindQueryValueError{Type: d.fieldType.Type, Value: d.query.Get(tag), Err: err}
+			if err := unmarshaler.UnmarshalText(fastconv.Bytes(d.query.Get(d.name))); err != nil {
+				return d.valueError(d.query.Get(d.name), err)
 			}
 			continue
 		}
 
 		switch d.field.Kind() {
 		case reflect.Slice:
-			for _, val := range d.query[tag] {
+			for _, val := range d.query[d.name] {
 				sv := reflect.New(d.fieldType.Type.Elem())
 				if err := d.parseBasicTypes(sv.Elem(), val); err != nil {
 					return err
@@ -116,7 +121,7 @@ func (d *queryDecoder) decode() error {
 				d.field.Set(reflect.Append(d.field, sv.Elem()))
 			}
 		case reflect.Array:
-			for i, val := range d.query[tag] {
+			for i, val := range d.query[d.name] {
 				if i == d.field.Len() {
 					break
 				}
@@ -125,7 +130,7 @@ func (d *queryDecoder) decode() error {
 				}
 			}
 		default:
-			if err := d.parseBasicTypes(d.field, d.query.Get(tag)); err != nil {
+			if err := d.parseBasicTypes(d.field, d.query.Get(d.name)); err != nil {
 				return err
 			}
 		}
@@ -139,29 +144,25 @@ func (d *queryDecoder) parseBasicTypes(rv reflect.Value, val string) error {
 	case reflect.Bool:
 		b, err := strconv.ParseBool(val)
 		if err != nil {
-			return &BindQueryValueError{
-				Type:  rv.Type(),
-				Value: val,
-				Err:   err,
-			}
+			return d.valueError(val, err)
 		}
 		rv.SetBool(b)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		i, err := strconv.ParseInt(val, 10, 64)
 		if err != nil {
-			return &BindQueryValueError{Type: rv.Type(), Value: val, Err: err}
+			return d.valueError(val, err)
 		}
 		rv.SetInt(i)
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		u, err := strconv.ParseUint(val, 10, 64)
 		if err != nil {
-			return &BindQueryValueError{Type: rv.Type(), Value: val, Err: err}
+			return d.valueError(val, err)
 		}
 		rv.SetUint(u)
 	case reflect.Float32, reflect.Float64:
 		f, err := strconv.ParseFloat(val, 64)
 		if err != nil {
-			return &BindQueryValueError{Type: rv.Type(), Value: val, Err: err}
+			return d.valueError(val, err)
 		}
 		rv.SetFloat(f)
 	case reflect.String:
@@ -169,7 +170,7 @@ func (d *queryDecoder) parseBasicTypes(rv reflect.Value, val string) error {
 	case reflect.Complex64, reflect.Complex128:
 		c, err := strconv.ParseComplex(val, 128)
 		if err != nil {
-			return &BindQueryValueError{Type: rv.Type(), Value: val, Err: err}
+			return d.valueError(val, err)
 		}
 		rv.SetComplex(c)
 	case reflect.Pointer:
@@ -183,7 +184,23 @@ func (d *queryDecoder) parseBasicTypes(rv reflect.Value, val string) error {
 			return d.parseBasicTypes(rv.Elem(), val)
 		}
 	default:
-		return &BindQueryTypeError{Type: rv.Type(), Struct: d.outType.Name(), Field: d.fieldType.Name}
+		return d.typeError(rv.Type())
 	}
 	return nil
+}
+
+func (d *queryDecoder) typeError(typ reflect.Type) error {
+	return &BindQueryTypeError{
+		Type:   typ,
+		Struct: d.outType.Name(),
+		Field:  d.fieldType.Name,
+	}
+}
+
+func (d *queryDecoder) valueError(val string, err error) error {
+	return &BindQueryValueError{
+		Name:  d.name,
+		Value: val,
+		Err:   err,
+	}
 }
