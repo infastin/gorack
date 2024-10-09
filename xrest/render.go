@@ -11,7 +11,7 @@ import (
 	texttemplate "text/template"
 )
 
-func NoContent(w http.ResponseWriter) {
+func NoContent(w http.ResponseWriter, code int) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -51,6 +51,22 @@ func JSON(w http.ResponseWriter, code int, body any) {
 	enc.Encode(body) //nolint:errcheck
 }
 
+func Attachment(w http.ResponseWriter, code int, filename string, content io.Reader, size int64) {
+	mimetype := mime.TypeByExtension(path.Ext(filename))
+	if mimetype == "" {
+		mimetype = "application/octet-stream"
+	}
+
+	w.Header().Set("Content-Type", mimetype)
+	if size != 0 {
+		w.Header().Set("Content-Length", strconv.FormatInt(size, 10))
+	}
+	w.Header().Set("Content-Disposition", "attachment; filename="+filename)
+
+	w.WriteHeader(code)
+	io.Copy(w, content) //nolint:errcheck
+}
+
 func File(w http.ResponseWriter, code int, filename string, content io.Reader, size int64) {
 	mimetype := mime.TypeByExtension(path.Ext(filename))
 	if mimetype == "" {
@@ -58,27 +74,15 @@ func File(w http.ResponseWriter, code int, filename string, content io.Reader, s
 	}
 
 	w.Header().Set("Content-Type", mimetype)
-	w.Header().Set("Content-Length", strconv.FormatInt(size, 10))
-	w.Header().Set("Content-Disposition", "attachment; filename="+filename)
-	w.WriteHeader(code)
-
-	io.Copy(w, content) //nolint:errcheck
-}
-
-func StreamFile(w http.ResponseWriter, code int, filename string, content io.Reader) {
-	mimetype := mime.TypeByExtension(path.Ext(filename))
-	if mimetype == "" {
-		mimetype = "application/octet-stream"
+	if size != 0 {
+		w.Header().Set("Content-Length", strconv.FormatInt(size, 10))
 	}
 
-	w.Header().Set("Content-Type", mimetype)
-	w.Header().Set("Content-Disposition", "attachment; filename="+filename)
 	w.WriteHeader(code)
-
 	io.Copy(w, content) //nolint:errcheck
 }
 
-func Data(w http.ResponseWriter, code int, data []byte) {
+func Blob(w http.ResponseWriter, code int, data []byte) {
 	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
 	w.WriteHeader(code)
