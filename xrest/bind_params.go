@@ -133,16 +133,13 @@ func (d *paramsDecoder) decodeValues(vs []string) error {
 	var unmarshaler encoding.TextUnmarshaler
 	if i, ok := d.field.Interface().(encoding.TextUnmarshaler); ok {
 		unmarshaler = i
-	}
-	if d.field.CanAddr() {
+	} else if d.field.CanAddr() {
 		if i, ok := d.field.Addr().Interface().(encoding.TextUnmarshaler); ok {
 			unmarshaler = i
 		}
 	}
 	if unmarshaler != nil {
-		if err := unmarshaler.UnmarshalText(fastconv.Bytes(vs[0])); err != nil {
-			return d.valueError(vs[0], err)
-		}
+		return unmarshaler.UnmarshalText(fastconv.Bytes(vs[0]))
 	}
 
 	switch d.field.Kind() {
