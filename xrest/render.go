@@ -2,6 +2,7 @@ package xrest
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	htmltemplate "html/template"
 	"io"
 	"mime"
@@ -9,6 +10,8 @@ import (
 	"path"
 	"strconv"
 	texttemplate "text/template"
+
+	"github.com/infastin/gorack/fastconv"
 )
 
 func NoContent(w http.ResponseWriter, code int) {
@@ -49,6 +52,20 @@ func JSON(w http.ResponseWriter, code int, body any) {
 	w.WriteHeader(code)
 
 	enc.Encode(body) //nolint:errcheck
+}
+
+func XMLWithHeader(w http.ResponseWriter, code int, body any) {
+	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
+	w.WriteHeader(code)
+
+	w.Write(fastconv.Bytes(xml.Header)) //nolint:errcheck
+	xml.NewEncoder(w).Encode(body)      //nolint:errcheck
+}
+
+func XML(w http.ResponseWriter, code int, body any) {
+	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
+	w.WriteHeader(code)
+	xml.NewEncoder(w).Encode(body) //nolint:errcheck
 }
 
 func Attachment(w http.ResponseWriter, code int, filename string, content io.Reader, size int64) {
