@@ -1,8 +1,8 @@
-package main
+package validation_test
 
 import (
 	"encoding/json"
-	"fmt"
+	"os"
 	"time"
 
 	"github.com/infastin/gorack/validation"
@@ -66,9 +66,8 @@ func (tr *TrackRequest) Validate() error {
 	)
 }
 
-func main() {
+func Example_request() {
 	tr := TrackRequest{}
-	err := tr.Validate()
-	str, _ := json.Marshal(err)
-	fmt.Printf("%s\n", str)
+	str, _ := json.Marshal(tr.Validate())
+	os.Stdout.Write(str)
 }

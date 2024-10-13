@@ -259,30 +259,30 @@ func (o *openAPIv3) setBearerAuth(format string) error {
 		o.last = o.components
 	}
 
-	var securitySchemas *yaml.Node
+	var securitySchemes *yaml.Node
 	for i := 0; i < len(o.components.val.Content); i += 2 {
 		k, v := o.components.val.Content[i], o.components.val.Content[i+1]
-		if k.Value == "securitySchemas" {
+		if k.Value == "securitySchemes" {
 			if v.Kind != yaml.MappingNode {
-				return errors.New(`invalid OpenAPI spec: "components/securitySchemas" is not an object`)
+				return errors.New(`invalid OpenAPI spec: "components/securitySchemes" is not an object`)
 			}
-			securitySchemas = v
+			securitySchemes = v
 			break
 		}
 	}
 
-	if securitySchemas == nil {
-		securitySchemas = &yaml.Node{
+	if securitySchemes == nil {
+		securitySchemes = &yaml.Node{
 			Kind:    yaml.MappingNode,
 			Content: make([]*yaml.Node, 0, 1),
 		}
 		o.components.val.Content = append(o.components.val.Content,
-			&yaml.Node{Kind: yaml.ScalarNode, Value: "securitySchemas"},
-			securitySchemas,
+			&yaml.Node{Kind: yaml.ScalarNode, Value: "securitySchemes"},
+			securitySchemes,
 		)
 	}
 
-	securitySchemas.Content = append(securitySchemas.Content,
+	securitySchemes.Content = append(securitySchemes.Content,
 		&yaml.Node{Kind: yaml.ScalarNode, Value: "BearerAuth"},
 		&yaml.Node{
 			Kind: yaml.MappingNode,

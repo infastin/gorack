@@ -1,12 +1,13 @@
-package main
+package validation_test
 
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/infastin/gorack/validation"
-	"github.com/infastin/gorack/validation/is/int"
-	"github.com/infastin/gorack/validation/is/str"
+	isint "github.com/infastin/gorack/validation/is/int"
+	isstr "github.com/infastin/gorack/validation/is/str"
 )
 
 type Config struct {
@@ -68,7 +69,7 @@ func (cfg *SQLiteConfig) Validate() error {
 	)
 }
 
-func main() {
+func Example_config() {
 	sqlite := DatabaseConfig{
 		Backend: "sqlite",
 	}
@@ -89,5 +90,5 @@ func main() {
 	}
 
 	b, _ := json.MarshalIndent(config.Validate(), "", "  ")
-	fmt.Printf("%s", b)
+	os.Stdout.Write(b)
 }
