@@ -64,6 +64,14 @@ func New(opts ...errorOption) error {
 	return e
 }
 
+func Text(msg string) error {
+	return New(WithMessage(msg))
+}
+
+func Textf(format string, args ...any) error {
+	return Text(fmt.Sprintf(format, args...))
+}
+
 func (e *Error) Error() string {
 	parts := []string{}
 	if e.kind != nil {
@@ -128,13 +136,19 @@ func Of(err, kind error) bool {
 func Wrap(err error, msg string) error {
 	e, ok := Into[*Error](err)
 	if !ok {
-		return &Error{cause: err, message: msg}
+		return New(WithCause(err), WithMessage(msg))
 	}
 
 	if e.message == "" {
 		e.message = msg
 	} else {
 		e.message = msg + ": " + e.message
+	}
+
+	if Trace && e.stack == nil {
+		stack := make([]byte, 1<<16)
+		stack = stack[:runtime.Stack(stack, false)]
+		e.stack = stack
 	}
 
 	return e
@@ -152,6 +166,12 @@ func Update(err error, opts ...errorOption) error {
 
 	for _, opt := range opts {
 		opt(e)
+	}
+
+	if Trace && e.stack == nil {
+		stack := make([]byte, 1<<16)
+		stack = stack[:runtime.Stack(stack, false)]
+		e.stack = stack
 	}
 
 	return e
