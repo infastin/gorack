@@ -3,48 +3,45 @@ package shot_test
 import (
 	"context"
 	"fmt"
-	"math/rand"
-	"strconv"
 	"time"
 
 	"github.com/infastin/gorack/shot"
 )
 
 type XorExample struct {
-	output chan string
+	output chan int
 	state  shot.Xor
 }
 
 func NewXorExample(ctx context.Context) *XorExample {
 	return &XorExample{
-		output: make(chan string, 1),
+		output: make(chan int, 1),
 		state:  shot.NewXor(ctx),
 	}
 }
 
-func (e *XorExample) Run(counter int) error {
+func (e *XorExample) Run(values [2]int, idx int) error {
 	stop, err := e.state.Start(context.Background())
 	if err != nil {
 		return err
 	}
 	defer stop()
 
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+
 	for {
 		select {
 		case <-e.state.Context().Done():
 			return e.state.Context().Err()
-		case <-time.After(time.Second):
-			switch counter++; {
-			case counter%3 == 0 && counter%5 == 0:
-				e.output <- "FizzBuzz"
-			case counter%3 == 0:
-				e.output <- "Fizz"
-			case counter%5 == 0:
-				e.output <- "Fizz"
-			default:
-				e.output <- strconv.Itoa(counter)
+		case <-ticker.C:
+			sum := values[0] + values[1]
+			values[idx] = sum
+			idx = (idx + 1) % 2
+			e.output <- sum
+			if sum == 377 {
+				ticker.Stop()
 			}
-			return nil
 		}
 	}
 }
@@ -57,37 +54,33 @@ func (e *XorExample) Close() error {
 	return nil
 }
 
-func (e *XorExample) Output() <-chan string {
+func (e *XorExample) Output() <-chan int {
 	return e.output
 }
 
 func ExampleXor() {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
 	xor := NewXorExample(ctx)
 	defer xor.Close()
 
-	counters := make(chan int, 1)
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-time.After(1500 * time.Millisecond):
-				counters <- rand.Int()
-			}
-		}
-	}()
+	go xor.Run([2]int{-1, 1}, 0)
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case counter := <-counters:
-			go xor.Run(counter)
 		case msg := <-xor.Output():
-			fmt.Println(msg)
+			if msg == 13 {
+				go xor.Run([2]int{13, 21}, 0)
+			}
+			if msg == 89 {
+				go xor.Run([2]int{89, 144}, 0)
+			}
+			fmt.Print(msg, " ")
 		}
 	}
+
+	// Output: 0 1 1 2 3 5 8 13 34 55 89 233 377
 }

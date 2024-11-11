@@ -3,22 +3,19 @@ package shot_test
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/infastin/gorack/shot"
 )
 
 type OneExample struct {
-	ticker *time.Ticker
-	output chan string
+	output chan int
 	state  shot.One
 }
 
 func NewOneExample(ctx context.Context) *OneExample {
 	return &OneExample{
-		ticker: time.NewTicker(time.Second),
-		output: make(chan string, 1),
+		output: make(chan int, 1),
 		state:  shot.NewOne(ctx),
 	}
 }
@@ -30,22 +27,23 @@ func (e *OneExample) Run() error {
 	}
 	defer stop()
 
-	counter := 0
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+
+	values := [2]int{-1, 1}
+	idx := 0
 
 	for {
 		select {
 		case <-e.state.Context().Done():
 			return e.state.Context().Err()
-		case <-e.ticker.C:
-			switch counter++; {
-			case counter%3 == 0 && counter%5 == 0:
-				e.output <- "FizzBuzz"
-			case counter%3 == 0:
-				e.output <- "Fizz"
-			case counter%5 == 0:
-				e.output <- "Fizz"
-			default:
-				e.output <- strconv.Itoa(counter)
+		case <-ticker.C:
+			sum := values[0] + values[1]
+			values[idx] = sum
+			idx = (idx + 1) % 2
+			e.output <- sum
+			if sum == 144 {
+				ticker.Stop()
 			}
 		}
 	}
@@ -55,16 +53,15 @@ func (e *OneExample) Close() error {
 	if err := e.state.Close(context.Background()); err != nil {
 		return err
 	}
-	close(e.output)
 	return nil
 }
 
-func (e *OneExample) Output() <-chan string {
+func (e *OneExample) Output() <-chan int {
 	return e.output
 }
 
 func ExampleOne() {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
 	one := NewOneExample(ctx)
@@ -72,7 +69,14 @@ func ExampleOne() {
 
 	go one.Run()
 
-	for msg := range one.Output() {
-		fmt.Println(msg)
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case msg := <-one.Output():
+			fmt.Print(msg, " ")
+		}
 	}
+
+	// Output: 0 1 1 2 3 5 8 13 21 34 55 89 144
 }

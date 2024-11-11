@@ -17,6 +17,7 @@ const (
 	ParamLocationQuery  ParamLocation = "query"
 	ParamLocationHeader ParamLocation = "header"
 	ParamLocationPath   ParamLocation = "path"
+	ParamLocationInline ParamLocation = "inline"
 )
 
 type InvalidBindParamsError struct {
@@ -45,6 +46,9 @@ type BindParamsTypeError struct {
 }
 
 func (e *BindParamsTypeError) Error() string {
+	if e.Location == ParamLocationInline {
+		return fmt.Sprintf("cannot inline Go struct field %s.%s of type %s", e.Struct, e.Field, e.Type.String())
+	}
 	return fmt.Sprintf("%s: cannot decode into Go struct field %s.%s of type %s", e.Location, e.Struct, e.Field, e.Type.String())
 }
 
@@ -103,6 +107,36 @@ func (d *paramsDecoder) decode() error {
 		d.fieldType = d.outputType.Field(i)
 		tag := parseStructTag(d.fieldType.Tag)
 
+		if _, ok := tag["inline"]; ok {
+			d.location = ParamLocationInline
+
+			rv := d.output.Field(i)
+			rt := rv.Type()
+
+			for rv.Kind() == reflect.Pointer {
+				if rv.IsNil() {
+					elem := reflect.New(rt.Elem())
+					rv.Set(elem)
+				}
+				rv = rv.Elem()
+				rt = rv.Type()
+			}
+
+			if rv.Kind() != reflect.Struct {
+				return d.typeError(rt)
+			}
+
+			inline := &paramsDecoder{
+				req:        d.req,
+				output:     rv,
+				outputType: rt,
+			}
+
+			if err := inline.decode(); err != nil {
+				return err
+			}
+		}
+
 		var values []string
 		if name, ok := tag["query"]; ok {
 			d.location = ParamLocationQuery
@@ -130,11 +164,23 @@ func (d *paramsDecoder) decode() error {
 }
 
 func (d *paramsDecoder) decodeValues(vs []string) error {
+	rv := d.field
+	rt := rv.Type()
+
+	for rv.Kind() == reflect.Pointer {
+		if rv.IsNil() {
+			elem := reflect.New(rt.Elem())
+			rv.Set(elem)
+		}
+		rv = rv.Elem()
+		rt = rv.Type()
+	}
+
 	var unmarshaler encoding.TextUnmarshaler
-	if i, ok := d.field.Interface().(encoding.TextUnmarshaler); ok {
+	if i, ok := rv.Interface().(encoding.TextUnmarshaler); ok {
 		unmarshaler = i
-	} else if d.field.CanAddr() {
-		if i, ok := d.field.Addr().Interface().(encoding.TextUnmarshaler); ok {
+	} else if rv.CanAddr() {
+		if i, ok := rv.Addr().Interface().(encoding.TextUnmarshaler); ok {
 			unmarshaler = i
 		}
 	}
@@ -142,26 +188,26 @@ func (d *paramsDecoder) decodeValues(vs []string) error {
 		return unmarshaler.UnmarshalText(fastconv.Bytes(vs[0]))
 	}
 
-	switch d.field.Kind() {
+	switch rv.Kind() {
 	case reflect.Slice:
 		for _, val := range vs {
-			sv := reflect.New(d.fieldType.Type.Elem())
+			sv := reflect.New(rt.Elem())
 			if err := d.decodeBasicTypes(sv.Elem(), val); err != nil {
 				return err
 			}
-			d.field.Set(reflect.Append(d.field, sv.Elem()))
+			rv.Set(reflect.Append(rv, sv.Elem()))
 		}
 	case reflect.Array:
 		for i, val := range vs {
-			if i == d.field.Len() {
+			if i == rv.Len() {
 				break
 			}
-			if err := d.decodeBasicTypes(d.field.Index(i), val); err != nil {
+			if err := d.decodeBasicTypes(rv.Index(i), val); err != nil {
 				return err
 			}
 		}
 	default:
-		if err := d.decodeBasicTypes(d.field, vs[0]); err != nil {
+		if err := d.decodeBasicTypes(rv, vs[0]); err != nil {
 			return err
 		}
 	}

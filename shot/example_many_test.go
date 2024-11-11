@@ -3,23 +3,24 @@ package shot_test
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/infastin/gorack/shot"
 )
 
 type ManyExample struct {
-	counter int
-	output  chan string
-	state   shot.Many
+	values [2]int
+	idx    int
+	output chan int
+	state  shot.Many
 }
 
 func NewManyExample(ctx context.Context) *ManyExample {
 	return &ManyExample{
-		counter: 0,
-		output:  make(chan string, 1),
-		state:   shot.NewMany(ctx),
+		values: [2]int{-1, 1},
+		idx:    0,
+		output: make(chan int, 1),
+		state:  shot.NewMany(ctx),
 	}
 }
 
@@ -30,22 +31,24 @@ func (e *ManyExample) Run() error {
 	}
 	defer stop()
 
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+
 	for {
 		select {
 		case <-e.state.Context().Done():
 			return e.state.Context().Err()
-		case <-time.After(time.Second):
-			switch e.counter++; {
-			case e.counter%3 == 0 && e.counter%5 == 0:
-				e.output <- "FizzBuzz"
-			case e.counter%3 == 0:
-				e.output <- "Fizz"
-			case e.counter%5 == 0:
-				e.output <- "Fizz"
-			default:
-				e.output <- strconv.Itoa(e.counter)
+		case <-ticker.C:
+			sum := e.values[0] + e.values[1]
+			e.values[e.idx] = sum
+			e.idx = (e.idx + 1) % 2
+			e.output <- sum
+			if sum == 13 || sum == 89 {
+				return nil
 			}
-			return nil
+			if sum == 144 {
+				ticker.Stop()
+			}
 		}
 	}
 }
@@ -58,12 +61,16 @@ func (e *ManyExample) Close() error {
 	return nil
 }
 
-func (e *ManyExample) Output() <-chan string {
+func (e *ManyExample) Output() <-chan int {
 	return e.output
 }
 
+func (e *ManyExample) Done() <-chan struct{} {
+	return e.state.Done()
+}
+
 func ExampleMany() {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
 	many := NewManyExample(ctx)
@@ -75,9 +82,12 @@ func ExampleMany() {
 		select {
 		case <-ctx.Done():
 			return
-		case msg := <-many.Output():
-			fmt.Println(msg)
+		case <-many.Done():
 			go many.Run()
+		case msg := <-many.Output():
+			fmt.Print(msg, " ")
 		}
 	}
+
+	// Output: 0 1 1 2 3 5 8 13 21 34 55 89 144
 }
