@@ -5,93 +5,18 @@ import (
 	"iter"
 )
 
-func Union[E cmp.Ordered](s1, s2 iter.Seq[E]) iter.Seq[E] {
+func Union[E cmp.Ordered](seqs ...iter.Seq[E]) iter.Seq[E] {
 	return func(yield func(E) bool) {
-		next1, stop1 := iter.Pull(s1)
-		defer stop1()
-
-		next2, stop2 := iter.Pull(s2)
-		defer stop2()
-
-		v1, ok1 := next1()
-		v2, ok2 := next2()
-
-		for ok1 {
-			if !ok2 {
-				for ; ok1; v1, ok1 = next1() {
-					if !yield(v1) {
-						return
-					}
+		seen := make(map[E]struct{})
+		for i := range seqs {
+			for v := range seqs[i] {
+				if _, ok := seen[v]; ok {
+					continue
 				}
-				return
-			}
-
-			if v2 < v1 {
-				if !yield(v2) {
+				seen[v] = struct{}{}
+				if !yield(v) {
 					return
 				}
-				v2, ok2 = next2()
-			} else {
-				if !yield(v1) {
-					return
-				}
-
-				if v1 == v2 {
-					v2, ok2 = next2()
-				}
-				v1, ok1 = next1()
-			}
-		}
-
-		for ; ok2; v2, ok2 = next2() {
-			if !yield(v2) {
-				return
-			}
-		}
-	}
-}
-
-func UnionFunc[E any](s1, s2 iter.Seq[E], comp func(E, E) int) iter.Seq[E] {
-	return func(yield func(E) bool) {
-		next1, stop1 := iter.Pull(s1)
-		defer stop1()
-
-		next2, stop2 := iter.Pull(s2)
-		defer stop2()
-
-		v1, ok1 := next1()
-		v2, ok2 := next2()
-
-		for ok1 {
-			if !ok2 {
-				for ; ok1; v1, ok1 = next1() {
-					if !yield(v1) {
-						return
-					}
-				}
-				return
-			}
-
-			if comp(v2, v1) < 0 {
-				if !yield(v2) {
-					return
-				}
-				v2, ok2 = next2()
-			} else {
-				if !yield(v1) {
-					return
-				}
-
-				if comp(v1, v2) == 0 {
-					v2, ok2 = next2()
-				}
-				v1, ok1 = next1()
-			}
-		}
-
-		for ; ok2; v2, ok2 = next2() {
-			if !yield(v2) {
-				return
 			}
 		}
 	}
@@ -99,53 +24,15 @@ func UnionFunc[E any](s1, s2 iter.Seq[E], comp func(E, E) int) iter.Seq[E] {
 
 func Intersection[E cmp.Ordered](s1, s2 iter.Seq[E]) iter.Seq[E] {
 	return func(yield func(E) bool) {
-		next1, stop1 := iter.Pull(s1)
-		defer stop1()
+		seen := make(map[E]struct{})
 
-		next2, stop2 := iter.Pull(s2)
-		defer stop2()
-
-		v1, ok1 := next1()
-		v2, ok2 := next2()
-
-		for ok1 && ok2 {
-			if v1 < v2 {
-				v1, ok1 = next1()
-			} else {
-				if v1 == v2 {
-					if !yield(v1) {
-						return
-					}
-					v1, ok1 = next1()
-				}
-				v2, ok2 = next2()
-			}
+		for v := range s1 {
+			seen[v] = struct{}{}
 		}
-	}
-}
 
-func IntersectionFunc[E any](s1, s2 iter.Seq[E], comp func(E, E) int) iter.Seq[E] {
-	return func(yield func(E) bool) {
-		next1, stop1 := iter.Pull(s1)
-		defer stop1()
-
-		next2, stop2 := iter.Pull(s2)
-		defer stop2()
-
-		v1, ok1 := next1()
-		v2, ok2 := next2()
-
-		for ok1 && ok2 {
-			if comp(v1, v2) < 0 {
-				v1, ok1 = next1()
-			} else {
-				if comp(v1, v2) == 0 {
-					if !yield(v1) {
-						return
-					}
-					v1, ok1 = next1()
-				}
-				v2, ok2 = next2()
+		for v := range s2 {
+			if _, ok := seen[v]; ok && !yield(v) {
+				return
 			}
 		}
 	}
@@ -153,173 +40,46 @@ func IntersectionFunc[E any](s1, s2 iter.Seq[E], comp func(E, E) int) iter.Seq[E
 
 func Difference[E cmp.Ordered](s1, s2 iter.Seq[E]) iter.Seq[E] {
 	return func(yield func(E) bool) {
-		next1, stop1 := iter.Pull(s1)
-		defer stop1()
+		seen := make(map[E]struct{})
 
-		next2, stop2 := iter.Pull(s2)
-		defer stop2()
+		for v := range s2 {
+			seen[v] = struct{}{}
+		}
 
-		v1, ok1 := next1()
-		v2, ok2 := next2()
-
-		for ok1 {
-			if !ok2 {
-				for ; ok1; v1, ok1 = next1() {
-					if !yield(v1) {
-						return
-					}
-				}
+		for v := range s1 {
+			if _, ok := seen[v]; !ok && !yield(v) {
 				return
-			}
-
-			if v1 < v2 {
-				if !yield(v1) {
-					return
-				}
-				v1, ok1 = next1()
-			} else {
-				if v1 == v2 {
-					v1, ok1 = next1()
-				}
-				v2, ok2 = next2()
 			}
 		}
 	}
 }
-
-func DifferenceFunc[E any](s1, s2 iter.Seq[E], comp func(E, E) int) iter.Seq[E] {
-	return func(yield func(E) bool) {
-		next1, stop1 := iter.Pull(s1)
-		defer stop1()
-
-		next2, stop2 := iter.Pull(s2)
-		defer stop2()
-
-		v1, ok1 := next1()
-		v2, ok2 := next2()
-
-		for ok1 {
-			if !ok2 {
-				for ; ok1; v1, ok1 = next1() {
-					if !yield(v1) {
-						return
-					}
-				}
-				return
-			}
-
-			if comp(v1, v2) < 0 {
-				if !yield(v1) {
-					return
-				}
-				v1, ok1 = next1()
-			} else {
-				if comp(v1, v2) == 0 {
-					v1, ok1 = next1()
-				}
-				v2, ok2 = next2()
-			}
-		}
-	}
-}
-
-// Indicates which set an element belongs to
-// in the symmetric difference.
-type DiffElemType int8
-
-const (
-	// An element belongs to the first set.
-	DiffElemFirst DiffElemType = iota
-	// An element belongs to the second set.
-	DiffElemSecond
-)
 
 func SymmetricDifference[E cmp.Ordered](s1, s2 iter.Seq[E]) iter.Seq2[E, DiffElemType] {
 	return func(yield func(E, DiffElemType) bool) {
-		next1, stop1 := iter.Pull(s1)
-		defer stop1()
+		firstSeen := make(map[E]struct{})
+		secondSeen := make(map[E]struct{})
 
-		next2, stop2 := iter.Pull(s2)
-		defer stop2()
+		first := make([]E, 0)
+		second := make([]E, 0)
 
-		v1, ok1 := next1()
-		v2, ok2 := next2()
-
-		for ok1 {
-			if !ok2 {
-				for ; ok1; v1, ok1 = next1() {
-					if !yield(v1, DiffElemFirst) {
-						return
-					}
-				}
-				break
-			}
-
-			if v1 < v2 {
-				if !yield(v1, DiffElemFirst) {
-					return
-				}
-				v1, ok1 = next1()
-			} else {
-				if v2 < v1 {
-					if !yield(v2, DiffElemSecond) {
-						return
-					}
-				} else {
-					v1, ok1 = next1()
-				}
-				v2, ok2 = next2()
-			}
+		for v := range s1 {
+			firstSeen[v] = struct{}{}
+			first = append(first, v)
 		}
 
-		for ; ok2; v2, ok2 = next2() {
-			if !yield(v2, DiffElemSecond) {
+		for v := range s2 {
+			secondSeen[v] = struct{}{}
+			second = append(second, v)
+		}
+
+		for i := range first {
+			if _, ok := secondSeen[first[i]]; !ok && !yield(first[i], DiffElemFirst) {
 				return
 			}
 		}
-	}
-}
 
-func SymmetricDifferenceFunc[E any](s1, s2 iter.Seq[E], comp func(E, E) int) iter.Seq2[E, DiffElemType] {
-	return func(yield func(E, DiffElemType) bool) {
-		next1, stop1 := iter.Pull(s1)
-		defer stop1()
-
-		next2, stop2 := iter.Pull(s2)
-		defer stop2()
-
-		v1, ok1 := next1()
-		v2, ok2 := next2()
-
-		for ok1 {
-			if !ok2 {
-				for ; ok1; v1, ok1 = next1() {
-					if !yield(v1, DiffElemFirst) {
-						return
-					}
-				}
-				break
-			}
-
-			if comp(v1, v2) < 0 {
-				if !yield(v1, DiffElemFirst) {
-					return
-				}
-				v1, ok1 = next1()
-			} else {
-				if comp(v2, v1) < 0 {
-					if !yield(v2, DiffElemSecond) {
-						return
-					}
-				} else {
-					v1, ok1 = next1()
-				}
-				v2, ok2 = next2()
-			}
-		}
-
-		for ; ok2; v2, ok2 = next2() {
-			if !yield(v2, DiffElemSecond) {
+		for i := range second {
+			if _, ok := firstSeen[second[i]]; !ok && !yield(second[i], DiffElemSecond) {
 				return
 			}
 		}
