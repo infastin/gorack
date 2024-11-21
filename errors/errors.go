@@ -31,46 +31,46 @@ func Errorf(format string, args ...any) error {
 }
 
 func Wrap(err error, msg string) error {
-	e := new(Error)
-	if err, ok := Into[*Error](err); ok {
-		*e = *err
+	wErr := new(Error)
+	if e, ok := Into[*Error](err); ok {
+		*wErr = *e
 	} else {
-		e.cause = err
+		wErr.cause = err
 	}
 
-	if e.message == "" {
-		e.message = msg
+	if wErr.message == "" {
+		wErr.message = msg
 	} else {
-		e.message = msg + ": " + e.message
+		wErr.message = msg + ": " + wErr.message
 	}
 
-	if e.stackTrace == nil {
-		e.stackTrace = callers(3)
+	if wErr.stackTrace == nil {
+		wErr.stackTrace = callers(3)
 	}
 
-	return e
+	return wErr
 }
 
 func Wrapf(err error, format string, args ...any) error {
-	e := new(Error)
-	if err, ok := Into[*Error](err); ok {
-		*e = *err
+	wErr := new(Error)
+	if e, ok := Into[*Error](err); ok {
+		*wErr = *e
 	} else {
-		e.cause = err
+		wErr.cause = err
 	}
 
 	msg := fmt.Sprintf(format, args...)
-	if e.message == "" {
-		e.message = msg
+	if wErr.message == "" {
+		wErr.message = msg
 	} else {
-		e.message = msg + ": " + e.message
+		wErr.message = msg + ": " + wErr.message
 	}
 
-	if e.stackTrace == nil {
-		e.stackTrace = callers(3)
+	if wErr.stackTrace == nil {
+		wErr.stackTrace = callers(3)
 	}
 
-	return e
+	return wErr
 }
 
 // Creates a new error with a given kind.
