@@ -31,9 +31,11 @@ func Errorf(format string, args ...any) error {
 }
 
 func Wrap(err error, msg string) error {
-	e, ok := Into[*Error](err)
-	if !ok {
-		e = &Error{cause: err}
+	e := new(Error)
+	if err, ok := Into[*Error](err); ok {
+		*e = *err
+	} else {
+		e.cause = err
 	}
 
 	if e.message == "" {
@@ -50,9 +52,11 @@ func Wrap(err error, msg string) error {
 }
 
 func Wrapf(err error, format string, args ...any) error {
-	e, ok := Into[*Error](err)
-	if !ok {
-		e = &Error{cause: err}
+	e := new(Error)
+	if err, ok := Into[*Error](err); ok {
+		*e = *err
+	} else {
+		e.cause = err
 	}
 
 	msg := fmt.Sprintf(format, args...)
