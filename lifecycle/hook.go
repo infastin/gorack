@@ -11,6 +11,12 @@ type Hook struct {
 	OnStop  func(context.Context) error
 }
 
+type Go struct {
+	Name     string
+	Run      func(context.Context) error
+	Shutdown func(context.Context) error
+}
+
 type SignalError struct {
 	Signal os.Signal
 }
