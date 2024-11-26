@@ -39,11 +39,14 @@ func (h *handler) Handle(ctx context.Context, record slog.Record) error {
 			group = dict
 		}
 	}
+	ev := h.lg.WithLevel(logLevels[record.Level]).Ctx(ctx)
+	if group == nil {
+		group = ev
+	}
 	record.Attrs(func(attr slog.Attr) bool {
 		eventAttr(group, attr)
 		return true
 	})
-	ev := h.lg.WithLevel(logLevels[record.Level]).Ctx(ctx)
 	if root != nil {
 		ev.Dict(h.groups[0], root)
 	}
