@@ -47,6 +47,7 @@ func New(opts ...Option) *Lifecycle {
 
 	return &Lifecycle{
 		stopTimeout: cfg.stopTimeout,
+		logger:      cfg.logger,
 		hooks:       make([]Hook, 0),
 	}
 }
@@ -60,7 +61,7 @@ func (l *Lifecycle) Go(g Go) {
 
 	logger := l.logger
 	if g.Name != "" {
-		logger.With(slog.String("name", g.Name))
+		logger = logger.With(slog.String("name", g.Name))
 	}
 
 	if g.Run != nil {
