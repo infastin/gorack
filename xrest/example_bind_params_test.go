@@ -1,7 +1,6 @@
 package xrest_test
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -34,7 +33,7 @@ func ExampleBindParams() {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		json.NewEncoder(w).Encode(&params)
+		xrest.JSON(w, http.StatusOK, &params)
 	})
 
 	ts := httptest.NewServer(mux)
