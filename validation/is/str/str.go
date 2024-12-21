@@ -37,11 +37,13 @@ var (
 	ErrPath           = validation.NewRuleError("is_path", "must be a valid path")
 	ErrFile           = validation.NewRuleError("is_file", "must be a valid path to a file")
 	ErrDirectory      = validation.NewRuleError("is_directory", "must be a valid path to a directory")
+	ErrCRON           = validation.NewRuleError("is_cron", "must be a valid CRON expression")
 )
 
 var (
 	rxUUID    = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
 	rxDNSName = regexp.MustCompile(`^([a-zA-Z0-9_]{1}[a-zA-Z0-9_-]{0,62}){1}(\.[a-zA-Z0-9_]{1}[a-zA-Z0-9_-]{0,62})*[\._]?$`)
+	rxCRON    = regexp.MustCompile(`^(((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*)\s+){4,6})(((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*))|(@(annually|yearly|monthly|weekly|daily|midnight|hourly))|(@every\s+(\d+(ns|us|µs|ms|s|m|h))+))$`)
 )
 
 func LowerCase[T ~string](v T) error {
@@ -222,6 +224,13 @@ func File[T ~string](v T) error {
 func Directory[T ~string](v T) error {
 	if stat, err := os.Stat(string(v)); err != nil || !stat.Mode().IsDir() {
 		return ErrDirectory
+	}
+	return nil
+}
+
+func CRON[T ~string](v T) error {
+	if !rxCRON.MatchString(string(v)) {
+		return ErrCRON
 	}
 	return nil
 }

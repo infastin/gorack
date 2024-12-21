@@ -1,0 +1,4 @@
+github.com/infastin/gorack/constraints v1.0.0 h1:rYm55FbG4yvfeK/FDYQqzuGxSxNkutbH2MahRLFDs2c=
+github.com/infastin/gorack/constraints v1.0.0/go.mod h1:XVOMMCGCb5W5Bpm+HTImmbgblSeesEl90WoBIXXOn44=
+github.com/infastin/gorack/fastconv v1.0.0 h1:8i4Mno/dAVXn2YIsdkD3zLRUnPs4H7Tq9+Fdmn80YUs=
+github.com/infastin/gorack/fastconv v1.0.0/go.mod h1:RltZTj1NfY1Vf+WCvqtOHzha/pGjLmnx59Nu2FTDKCY=
