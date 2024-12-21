@@ -9,6 +9,7 @@ services in Golang.
 
 - [cmap](https://pkg.go.dev/github.com/infastin/gorack/cmap)
 - [constraints](https://pkg.go.dev/github.com/infastin/gorack/constraints)
+- [ttlmap](https://pkg.go.dev/github.com/infastin/gorack/container/ttlmap)
 - [errdefer](https://pkg.go.dev/github.com/infastin/gorack/errdefer)
 - [errors](https://pkg.go.dev/github.com/infastin/gorack/errors)
 - [fastconv](https://pkg.go.dev/github.com/infastin/gorack/fastconv)
@@ -16,7 +17,7 @@ services in Golang.
 - [openapi](https://pkg.go.dev/github.com/infastin/gorack/openapi)
 - [opt](https://pkg.go.dev/github.com/infastin/gorack/opt)
 - [shot](https://pkg.go.dev/github.com/infastin/gorack/shot)
-- [slog](https://pkg.go.dev/github.com/infastin/gorack/slog)
+- [slogzerolog](https://pkg.go.dev/github.com/infastin/gorack/slog/zerolog)
 - [validation](https://pkg.go.dev/github.com/infastin/gorack/validation)
 - [xalg](https://pkg.go.dev/github.com/infastin/gorack/xalg)
 - [xapp](https://pkg.go.dev/github.com/infastin/gorack/xapp)
