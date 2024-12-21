@@ -1,6 +1,6 @@
 module github.com/infastin/slog/zerolog
 
-go 1.23.0
+go 1.23
 
 require github.com/rs/zerolog v1.33.0
 

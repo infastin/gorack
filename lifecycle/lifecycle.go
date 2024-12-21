@@ -36,7 +36,7 @@ func WithLogger(logger *slog.Logger) Option {
 type Lifecycle struct {
 	stopTimeout time.Duration
 	logger      *slog.Logger
-	hooks       []Hook
+	hooks       []hook
 }
 
 func New(opts ...Option) *Lifecycle {
@@ -48,38 +48,33 @@ func New(opts ...Option) *Lifecycle {
 	return &Lifecycle{
 		stopTimeout: cfg.stopTimeout,
 		logger:      cfg.logger,
-		hooks:       make([]Hook, 0),
+		hooks:       make([]hook, 0),
 	}
 }
 
-func (l *Lifecycle) Append(hook Hook) {
-	l.hooks = append(l.hooks, hook)
-}
-
-func (l *Lifecycle) Go(g Go) {
-	h := Hook{}
+func (l *Lifecycle) Append(h Hook) {
+	hook := hook{}
 
 	logger := l.logger
-	if g.Name != "" {
-		logger = logger.With(slog.String("name", g.Name))
+	if h.Name != "" {
+		logger = logger.With(slog.String("name", h.Name))
 	}
 
-	if g.Run != nil {
-		h.OnStart = func(ctx context.Context, cancel context.CancelCauseFunc) error {
-			go func() {
-				logger.Info("running start hook")
-				if err := g.Run(ctx); err != nil {
-					logger.Error("failed to run start hook", slog.String("error", err.Error()))
-					cancel(err)
-				}
-			}()
+	if h.OnStart != nil {
+		hook.onStart = func(ctx context.Context, cancel context.CancelCauseFunc) error {
+			logger.Info("running start hook")
+			if err := h.OnStart(ctx, cancel); err != nil {
+				logger.Error("failed to run start hook", slog.String("error", err.Error()))
+				return err
+			}
 			return nil
 		}
 	}
-	if g.Shutdown != nil {
-		h.OnStop = func(ctx context.Context) error {
+
+	if h.OnStop != nil {
+		hook.onStop = func(ctx context.Context) error {
 			logger.Info("running stop hook")
-			if err := g.Shutdown(ctx); err != nil {
+			if err := h.OnStop(ctx); err != nil {
 				logger.Error("failed to run stop hook", slog.String("error", err.Error()))
 				return err
 			}
@@ -87,7 +82,42 @@ func (l *Lifecycle) Go(g Go) {
 		}
 	}
 
-	l.hooks = append(l.hooks, h)
+	l.hooks = append(l.hooks, hook)
+}
+
+func (l *Lifecycle) Go(actor Actor) {
+	hook := hook{}
+
+	logger := l.logger
+	if actor.Name != "" {
+		logger = logger.With(slog.String("name", actor.Name))
+	}
+
+	if actor.Run != nil {
+		hook.onStart = func(ctx context.Context, cancel context.CancelCauseFunc) error {
+			go func() {
+				logger.Info("running start hook")
+				if err := actor.Run(ctx); err != nil {
+					logger.Error("failed to run start hook", slog.String("error", err.Error()))
+					cancel(err)
+				}
+			}()
+			return nil
+		}
+	}
+
+	if actor.Shutdown != nil {
+		hook.onStop = func(ctx context.Context) error {
+			logger.Info("running stop hook")
+			if err := actor.Shutdown(ctx); err != nil {
+				logger.Error("failed to run stop hook", slog.String("error", err.Error()))
+				return err
+			}
+			return nil
+		}
+	}
+
+	l.hooks = append(l.hooks, hook)
 }
 
 func (l *Lifecycle) Run(ctx context.Context) error {
@@ -96,14 +126,15 @@ func (l *Lifecycle) Run(ctx context.Context) error {
 	}
 
 	hookCtx, hookCancel := context.WithCancelCause(ctx)
+	defer hookCancel(nil)
 
 	k := 0
 	for ; k < len(l.hooks); k++ {
 		hook := l.hooks[k]
-		if hook.OnStart == nil {
+		if hook.onStart == nil {
 			continue
 		}
-		if err := hook.OnStart(hookCtx, hookCancel); err != nil {
+		if err := hook.onStart(hookCtx, hookCancel); err != nil {
 			hookCancel(err)
 			break
 		}
@@ -118,10 +149,10 @@ func (l *Lifecycle) Run(ctx context.Context) error {
 	defer cancel()
 
 	for i := k - 1; i >= 0; i-- {
-		if l.hooks[i].OnStop == nil {
+		if l.hooks[i].onStop == nil {
 			continue
 		}
-		if err := l.hooks[i].OnStop(stopCtx); err != nil {
+		if err := l.hooks[i].onStop(stopCtx); err != nil {
 			errs = append(errs, err)
 		}
 	}

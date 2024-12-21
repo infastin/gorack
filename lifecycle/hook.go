@@ -6,12 +6,18 @@ import (
 	"os/signal"
 )
 
+type hook struct {
+	onStart func(context.Context, context.CancelCauseFunc) error
+	onStop  func(context.Context) error
+}
+
 type Hook struct {
+	Name    string
 	OnStart func(context.Context, context.CancelCauseFunc) error
 	OnStop  func(context.Context) error
 }
 
-type Go struct {
+type Actor struct {
 	Name     string
 	Run      func(context.Context) error
 	Shutdown func(context.Context) error
@@ -27,6 +33,7 @@ func (e *SignalError) Error() string {
 
 func Signal(signals ...os.Signal) Hook {
 	return Hook{
+		Name: "signal handler",
 		OnStart: func(ctx context.Context, cancel context.CancelCauseFunc) error {
 			go func() {
 				sigCh := make(chan os.Signal, 1)

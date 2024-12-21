@@ -7,25 +7,23 @@ import (
 // Fast conversion of a byte slice to a string.
 // The bytes argument can be nil.
 // Must not be used if the byte slice could be mutated.
-func String(bytes []byte) string {
+func String[B ~[]byte](bytes B) string {
 	return unsafe.String(unsafe.SliceData(bytes), len(bytes))
 }
 
 // Fast conversion of a string to a byte slice.
 // Must not be used if the resulting byte slice could be mutated.
-func Bytes(str string) []byte {
-	return unsafe.Slice(unsafe.StringData(str), len(str))
+func Bytes[S ~string](str S) []byte {
+	return unsafe.Slice(unsafe.StringData(string(str)), len(str))
 }
 
-// Returns type pointer.
+// Returns a type pointer.
 func TypePointer(a any) uintptr {
 	type emptyInterface struct {
 		typ unsafe.Pointer
 		ptr unsafe.Pointer
 	}
-
 	iface := (*emptyInterface)(unsafe.Pointer(&a))
-
 	return uintptr(iface.typ)
 }
 
