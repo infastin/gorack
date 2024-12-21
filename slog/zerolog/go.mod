@@ -1,4 +1,4 @@
-module github.com/infastin/slog/zerolog
+module github.com/infastin/gorack/slog/zerolog
 
 go 1.23
 
