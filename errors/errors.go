@@ -145,6 +145,14 @@ func (e *Error) Format(s fmt.State, verb rune) {
 	}
 }
 
+func (e *Error) Is(target error) bool {
+	return errors.Is(e.kind, target) || errors.Is(e.cause, target)
+}
+
+func (e *Error) As(target any) bool {
+	return errors.As(e.kind, target) || errors.As(e.cause, target)
+}
+
 func (e *Error) Unwrap() []error {
 	var errs []error
 	if e.kind != nil {
@@ -195,11 +203,27 @@ func Join(errs ...error) error {
 
 func Cause(err error) error {
 	for err != nil {
-		cause, ok := err.(interface{ Cause() error })
+		e, ok := err.(interface{ Cause() error })
 		if !ok {
 			break
 		}
-		err = cause.Cause()
+		err = e.Cause()
 	}
 	return err
+}
+
+func Kind(err error) error {
+	e, ok := err.(interface{ Kind() error })
+	if !ok {
+		return nil
+	}
+	return e.Kind()
+}
+
+func Message(err error) string {
+	e, ok := err.(interface{ Message() string })
+	if !ok {
+		return ""
+	}
+	return e.Message()
 }
