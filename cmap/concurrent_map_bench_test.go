@@ -8,7 +8,6 @@ import (
 
 func BenchmarkItems(b *testing.B) {
 	m := New[Animal]()
-
 	// Insert 100 elements.
 	for i := 0; i < 10000; i++ {
 		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
@@ -20,7 +19,6 @@ func BenchmarkItems(b *testing.B) {
 
 func BenchmarkMarshalJson(b *testing.B) {
 	m := New[Animal]()
-
 	// Insert 100 elements.
 	for i := 0; i < 10000; i++ {
 		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
@@ -259,21 +257,25 @@ func BenchmarkMultiGetSetBlock_256_Shard(b *testing.B) {
 	benchmarkMultiGetSetBlock(b, 256)
 }
 
-func GetSet[K comparable, V any](m ConcurrentMap[K, V], finished chan struct{}) (set func(key K, value V), get func(key K, value V)) {
-	return func(key K, value V) {
-			for i := 0; i < 10; i++ {
-				m.Get(key)
-			}
-			finished <- struct{}{}
-		}, func(key K, value V) {
-			for i := 0; i < 10; i++ {
-				m.Set(key, value)
-			}
-			finished <- struct{}{}
+func GetSet[K comparable, V any](m ConcurrentMap[K, V], finished chan struct{},
+) (set func(key K, value V), get func(key K, value V)) {
+	get = func(key K, value V) {
+		for i := 0; i < 10; i++ {
+			m.Get(key)
 		}
+		finished <- struct{}{}
+	}
+	set = func(key K, value V) {
+		for i := 0; i < 10; i++ {
+			m.Set(key, value)
+		}
+		finished <- struct{}{}
+	}
+	return get, set
 }
 
-func GetSetSyncMap[K comparable, V any](m *sync.Map, finished chan struct{}) (get func(key K, value V), set func(key K, value V)) {
+func GetSetSyncMap[K comparable, V any](m *sync.Map, finished chan struct{},
+) (get func(key K, value V), set func(key K, value V)) {
 	get = func(key K, value V) {
 		for i := 0; i < 10; i++ {
 			m.Load(key)
@@ -286,7 +288,7 @@ func GetSetSyncMap[K comparable, V any](m *sync.Map, finished chan struct{}) (ge
 		}
 		finished <- struct{}{}
 	}
-	return
+	return get, set
 }
 
 func BenchmarkKeys(b *testing.B) {
