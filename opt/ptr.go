@@ -15,3 +15,12 @@ func ZeroPtr[T comparable](value T) *T {
 	*ptr = value
 	return ptr
 }
+
+func ConvertPtr[T, U any](ptr *T, fn func(T) U) *U {
+	if ptr == nil {
+		return nil
+	}
+	res := new(U)
+	*res = fn(*ptr)
+	return res
+}
