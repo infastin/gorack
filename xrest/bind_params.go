@@ -190,8 +190,9 @@ func (d *paramsDecoder) decodeValues(vs []string) error {
 
 	switch rv.Kind() {
 	case reflect.Slice:
+		rte := rt.Elem()
 		for _, val := range vs {
-			sv := reflect.New(rt.Elem())
+			sv := reflect.New(rte)
 			if err := d.decodeBasicTypes(sv.Elem(), val); err != nil {
 				return err
 			}
