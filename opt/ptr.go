@@ -24,3 +24,10 @@ func ConvertPtr[T, U any](ptr *T, fn func(T) U) *U {
 	*res = fn(*ptr)
 	return res
 }
+
+func Deref[T any](ptr *T, def T) T {
+	if ptr == nil {
+		return def
+	}
+	return *ptr
+}
