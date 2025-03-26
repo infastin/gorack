@@ -28,7 +28,18 @@ func NullBoolFromPtr[T ~bool](value *T) NullBool[T] {
 	if value == nil {
 		return NewNullBool[T](false, false)
 	}
-	return NewNullBool(*value, true)
+	return NullBoolFrom(*value)
+}
+
+func NullBoolFromFunc[T ~bool, U any](value U, f func(U) T) NullBool[T] {
+	return NullBoolFrom(f(value))
+}
+
+func NewBoolFromPtrFunc[T ~bool, U any](value *U, f func(U) T) NullBool[T] {
+	if value == nil {
+		return NewNullBool[T](false, false)
+	}
+	return NullBoolFrom(f(*value))
 }
 
 func (v NullBool[T]) Std() sql.NullBool {
@@ -123,14 +134,25 @@ func NewZeroBool[T ~bool](value T, valid bool) ZeroBool[T] {
 }
 
 func ZeroBoolFrom[T ~bool](value T) ZeroBool[T] {
-	return NewZeroBool(value, true)
+	return NewZeroBool(value, bool(value))
 }
 
 func ZeroBoolFromPtr[T ~bool](value *T) ZeroBool[T] {
 	if value == nil {
 		return NewZeroBool[T](false, false)
 	}
-	return NewZeroBool(*value, true)
+	return ZeroBoolFrom(*value)
+}
+
+func ZeroBoolFromFunc[T ~bool, U any](value U, f func(U) T) ZeroBool[T] {
+	return ZeroBoolFrom(f(value))
+}
+
+func ZeroBoolFromPtrFunc[T ~bool, U any](value *U, f func(U) T) ZeroBool[T] {
+	if value == nil {
+		return NewZeroBool[T](false, false)
+	}
+	return ZeroBoolFrom(f(*value))
 }
 
 func (v ZeroBool[T]) Std() sql.NullBool {

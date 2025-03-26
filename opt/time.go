@@ -25,7 +25,18 @@ func NullTimeFromPtr(value *time.Time) NullTime {
 	if value == nil {
 		return NewNullTime(time.Time{}, false)
 	}
-	return NewNullTime(*value, true)
+	return NullTimeFrom(*value)
+}
+
+func NullTimeFromFunc[U any](value U, f func(U) time.Time) NullTime {
+	return NullTimeFrom(f(value))
+}
+
+func NullTimeFromPtrFunc[U any](value *U, f func(U) time.Time) NullTime {
+	if value == nil {
+		return NewNullTime(time.Time{}, false)
+	}
+	return NullTimeFrom(f(*value))
 }
 
 func (v NullTime) Std() sql.NullTime {
@@ -125,6 +136,17 @@ func ZeroTimeFromPtr(value *time.Time) ZeroTime {
 		return NewZeroTime(time.Time{}, false)
 	}
 	return NewZeroTime(*value, true)
+}
+
+func ZeroTimeFromFunc[U any](value U, f func(U) time.Time) ZeroTime {
+	return ZeroTimeFrom(f(value))
+}
+
+func ZeroTimeFromPtrFunc[U any](value *U, f func(U) time.Time) ZeroTime {
+	if value == nil {
+		return NewZeroTime(time.Time{}, false)
+	}
+	return ZeroTimeFrom(f(*value))
 }
 
 func (v ZeroTime) Std() sql.NullTime {

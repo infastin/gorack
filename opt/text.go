@@ -34,6 +34,18 @@ func NullTextFromPtr[T Text](value *T) NullText[T] {
 	}
 }
 
+func NullTextFromFunc[T Text, U any](value U, f func(U) T) NullText[T] {
+	return NullText[T]{
+		Null: NullFromFunc(value, f),
+	}
+}
+
+func NullTextFromPtrFunc[T Text, U any](value *U, f func(U) T) NullText[T] {
+	return NullText[T]{
+		Null: NullFromPtrFunc(value, f),
+	}
+}
+
 func (v NullText[T]) MarshalText() ([]byte, error) {
 	if !v.Valid {
 		return []byte{}, nil
@@ -68,6 +80,18 @@ func ZeroTextFrom[T ComparableText](value T) ZeroText[T] {
 func ZeroTextFromPtr[T ComparableText](value *T) ZeroText[T] {
 	return ZeroText[T]{
 		Zero: ZeroFromPtr(value),
+	}
+}
+
+func ZeroTextFromFunc[T ComparableText, U any](value U, f func(U) T) ZeroText[T] {
+	return ZeroText[T]{
+		Zero: ZeroFromFunc(value, f),
+	}
+}
+
+func ZeroTextFromPtrFunc[T ComparableText, U any](value *U, f func(U) T) ZeroText[T] {
+	return ZeroText[T]{
+		Zero: ZeroFromPtrFunc(value, f),
 	}
 }
 

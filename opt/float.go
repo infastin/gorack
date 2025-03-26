@@ -29,7 +29,18 @@ func NullFloatFromPtr[T constraints.Float](value *T) NullFloat[T] {
 	if value == nil {
 		return NewNullFloat[T](0, false)
 	}
-	return NewNullFloat(*value, true)
+	return NullFloatFrom(*value)
+}
+
+func NullFloatFromFunc[T constraints.Float, U any](value U, f func(U) T) NullFloat[T] {
+	return NullFloatFrom(f(value))
+}
+
+func NullFloatFromPtrFunc[T constraints.Float, U any](value *U, f func(U) T) NullFloat[T] {
+	if value == nil {
+		return NewNullFloat[T](0, false)
+	}
+	return NullFloatFrom(f(*value))
 }
 
 func (v NullFloat[T]) Std() sql.NullFloat64 {
@@ -124,14 +135,25 @@ func NewZeroFloat[T constraints.Float](value T, valid bool) ZeroFloat[T] {
 }
 
 func ZeroFloatFrom[T constraints.Float](value T) ZeroFloat[T] {
-	return NewZeroFloat(value, true)
+	return NewZeroFloat(value, value != 0)
 }
 
 func ZeroFloatFromPtr[T constraints.Float](value *T) ZeroFloat[T] {
 	if value == nil {
 		return NewZeroFloat[T](0, false)
 	}
-	return NewZeroFloat(*value, true)
+	return ZeroFloatFrom(*value)
+}
+
+func ZeroFloatFromFunc[T constraints.Float, U any](value U, f func(U) T) ZeroFloat[T] {
+	return ZeroFloatFrom(f(value))
+}
+
+func ZeroFloatFromPtrFunc[T constraints.Float, U any](value *U, f func(U) T) ZeroFloat[T] {
+	if value == nil {
+		return NewZeroFloat[T](0, false)
+	}
+	return ZeroFloatFrom(f(*value))
 }
 
 func (v ZeroFloat[T]) Std() sql.NullFloat64 {

@@ -29,7 +29,18 @@ func NullIntFromPtr[T constraints.Int](value *T) NullInt[T] {
 	if value == nil {
 		return NewNullInt[T](0, false)
 	}
-	return NewNullInt(*value, true)
+	return NullIntFrom(*value)
+}
+
+func NullIntFromFunc[T constraints.Int, U any](value U, f func(U) T) NullInt[T] {
+	return NullIntFrom(f(value))
+}
+
+func NullIntFromPtrFunc[T constraints.Int, U any](value *U, f func(U) T) NullInt[T] {
+	if value == nil {
+		return NewNullInt[T](0, false)
+	}
+	return NullIntFrom(f(*value))
 }
 
 func (v NullInt[T]) Std16() sql.NullInt16 {
@@ -149,7 +160,18 @@ func ZeroIntFromPtr[T constraints.Int](value *T) ZeroInt[T] {
 	if value == nil {
 		return NewZeroInt[T](0, false)
 	}
-	return NewZeroInt(*value, true)
+	return ZeroIntFrom(*value)
+}
+
+func ZeroIntFromFunc[T constraints.Int, U any](value U, f func(U) T) ZeroInt[T] {
+	return ZeroIntFrom(f(value))
+}
+
+func ZeroIntFromPtrFunc[T constraints.Int, U any](value *U, f func(U) T) ZeroInt[T] {
+	if value == nil {
+		return NewZeroInt[T](0, false)
+	}
+	return ZeroIntFrom(f(*value))
 }
 
 func (v ZeroInt[T]) Std16() sql.NullInt16 {

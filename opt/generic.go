@@ -26,7 +26,19 @@ func NullFromPtr[T any](value *T) Null[T] {
 		var zero T
 		return NewNull(zero, false)
 	}
-	return NewNull(*value, true)
+	return NullFrom(*value)
+}
+
+func NullFromFunc[T, U any](value U, f func(U) T) Null[T] {
+	return NullFrom(f(value))
+}
+
+func NullFromPtrFunc[T, U any](value *U, f func(U) T) Null[T] {
+	if value == nil {
+		var zero T
+		return NewNull(zero, false)
+	}
+	return NullFrom(f(*value))
 }
 
 func (v *Null[T]) Set(value T) {
@@ -98,15 +110,27 @@ func NewZero[T comparable](value T, valid bool) Zero[T] {
 
 func ZeroFrom[T comparable](value T) Zero[T] {
 	var zero T
-	return NewZero(zero, value == zero)
+	return NewZero(value, value == zero)
 }
 
 func ZeroFromPtr[T comparable](value *T) Zero[T] {
-	var zero T
-	if value == nil || *value == zero {
+	if value == nil {
+		var zero T
 		return NewZero(zero, false)
 	}
-	return NewZero(*value, true)
+	return ZeroFrom(*value)
+}
+
+func ZeroFromFunc[T comparable, U any](value U, f func(U) T) Zero[T] {
+	return ZeroFrom(f(value))
+}
+
+func ZeroFromPtrFunc[T comparable, U any](value *U, f func(U) T) Zero[T] {
+	if value == nil {
+		var zero T
+		return NewZero(zero, false)
+	}
+	return ZeroFrom(f(*value))
 }
 
 func (v Zero[T]) Std() sql.Null[T] {

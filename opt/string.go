@@ -27,7 +27,18 @@ func NullStringFromPtr[T ~string](value *T) NullString[T] {
 	if value == nil {
 		return NewNullString[T]("", false)
 	}
-	return NewNullString(*value, true)
+	return NullStringFrom(*value)
+}
+
+func NullStringFromFunc[T ~string, U any](value U, f func(U) T) NullString[T] {
+	return NullStringFrom(f(value))
+}
+
+func NullStringFromPtrFunc[T ~string, U any](value *U, f func(U) T) NullString[T] {
+	if value == nil {
+		return NewNullString[T]("", false)
+	}
+	return NullStringFrom(f(*value))
 }
 
 func (v NullString[T]) Std() sql.NullString {
@@ -68,7 +79,7 @@ func (v NullString[T]) MarshalJSON() ([]byte, error) {
 	if !v.Valid {
 		return []byte(`null`), nil
 	}
-	return fastconv.Bytes(string(v.Value)), nil
+	return fastconv.Bytes(v.Value), nil
 }
 
 func (v *NullString[T]) UnmarshalJSON(data []byte) error {
@@ -89,7 +100,7 @@ func (v NullString[T]) MarshalText() ([]byte, error) {
 	if !v.Valid {
 		return []byte{}, nil
 	}
-	return fastconv.Bytes(string(v.Value)), nil
+	return fastconv.Bytes(v.Value), nil
 }
 
 func (v *NullString[T]) UnmarshalText(data []byte) error {
@@ -124,7 +135,18 @@ func ZeroStringFromPtr[T ~string](value *T) ZeroString[T] {
 	if value == nil {
 		return NewZeroString[T]("", false)
 	}
-	return NewZeroString(*value, true)
+	return ZeroStringFrom(*value)
+}
+
+func ZeroStringFromFunc[T ~string, U any](value U, f func(U) T) ZeroString[T] {
+	return ZeroStringFrom(f(value))
+}
+
+func ZeroStringFromPtrFunc[T ~string, U any](value *U, f func(U) T) ZeroString[T] {
+	if value == nil {
+		return NewZeroString[T]("", false)
+	}
+	return ZeroStringFrom(f(*value))
 }
 
 func (v ZeroString[T]) Std() sql.NullString {
@@ -165,7 +187,7 @@ func (v ZeroString[T]) MarshalJSON() ([]byte, error) {
 	if !v.Valid {
 		return []byte(`null`), nil
 	}
-	return fastconv.Bytes(string(v.Value)), nil
+	return fastconv.Bytes(v.Value), nil
 }
 
 func (v *ZeroString[T]) UnmarshalJSON(data []byte) error {
@@ -186,7 +208,7 @@ func (v ZeroString[T]) MarshalText() ([]byte, error) {
 	if !v.Valid {
 		return []byte{}, nil
 	}
-	return fastconv.Bytes(string(v.Value)), nil
+	return fastconv.Bytes(v.Value), nil
 }
 
 func (v *ZeroString[T]) UnmarshalText(data []byte) error {
