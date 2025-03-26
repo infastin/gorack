@@ -146,7 +146,7 @@ func (v *ZeroString[T]) Ptr() *T {
 	return &v.Value
 }
 
-func (v ZeroString[T]) IsZeroString() bool {
+func (v ZeroString[T]) IsZero() bool {
 	return !v.Valid
 }
 

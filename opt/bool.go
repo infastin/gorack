@@ -152,7 +152,7 @@ func (v *ZeroBool[T]) Ptr() *T {
 	return &v.Value
 }
 
-func (v ZeroBool[T]) IsZeroBool() bool {
+func (v ZeroBool[T]) IsZero() bool {
 	return !v.Valid
 }
 

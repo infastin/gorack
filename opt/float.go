@@ -153,7 +153,7 @@ func (v *ZeroFloat[T]) Ptr() *T {
 	return &v.Value
 }
 
-func (v ZeroFloat[T]) IsZeroFloat() bool {
+func (v ZeroFloat[T]) IsZero() bool {
 	return !v.Valid
 }
 

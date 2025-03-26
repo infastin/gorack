@@ -146,7 +146,7 @@ func (v *ZeroTime) Ptr() *time.Time {
 	return &v.Value
 }
 
-func (v ZeroTime) IsZeroTime() bool {
+func (v ZeroTime) IsZero() bool {
 	return !v.Valid
 }
 

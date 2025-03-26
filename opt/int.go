@@ -189,7 +189,7 @@ func (v *ZeroInt[T]) Ptr() *T {
 	return &v.Value
 }
 
-func (v ZeroInt[T]) IsZeroInt() bool {
+func (v ZeroInt[T]) IsZero() bool {
 	return !v.Valid
 }
 
