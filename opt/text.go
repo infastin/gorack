@@ -34,15 +34,15 @@ func NullTextFromPtr[T Text](value *T) NullText[T] {
 	}
 }
 
-func NullTextFromFunc[T Text, U any](value U, f func(U) T) NullText[T] {
+func NullTextFromFunc[T Text, U any](value *U, f func(U) T) NullText[T] {
 	return NullText[T]{
 		Null: NullFromFunc(value, f),
 	}
 }
 
-func NullTextFromPtrFunc[T Text, U any](value *U, f func(U) T) NullText[T] {
+func NullTextFromFuncPtr[T Text, U any](value *U, f func(*U) T) NullText[T] {
 	return NullText[T]{
-		Null: NullFromPtrFunc(value, f),
+		Null: NullFromFuncPtr(value, f),
 	}
 }
 
@@ -83,15 +83,15 @@ func ZeroTextFromPtr[T ComparableText](value *T) ZeroText[T] {
 	}
 }
 
-func ZeroTextFromFunc[T ComparableText, U any](value U, f func(U) T) ZeroText[T] {
+func ZeroTextFromFunc[T ComparableText, U any](value *U, f func(U) T) ZeroText[T] {
 	return ZeroText[T]{
 		Zero: ZeroFromFunc(value, f),
 	}
 }
 
-func ZeroTextFromPtrFunc[T ComparableText, U any](value *U, f func(U) T) ZeroText[T] {
+func ZeroTextFromFuncPtr[T ComparableText, U any](value *U, f func(*U) T) ZeroText[T] {
 	return ZeroText[T]{
-		Zero: ZeroFromPtrFunc(value, f),
+		Zero: ZeroFromFuncPtr(value, f),
 	}
 }
 

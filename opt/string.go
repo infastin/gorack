@@ -30,15 +30,18 @@ func NullStringFromPtr[T ~string](value *T) NullString[T] {
 	return NullStringFrom(*value)
 }
 
-func NullStringFromFunc[T ~string, U any](value U, f func(U) T) NullString[T] {
-	return NullStringFrom(f(value))
-}
-
-func NullStringFromPtrFunc[T ~string, U any](value *U, f func(U) T) NullString[T] {
+func NullStringFromFunc[T ~string, U any](value *U, f func(U) T) NullString[T] {
 	if value == nil {
 		return NewNullString[T]("", false)
 	}
 	return NullStringFrom(f(*value))
+}
+
+func NullStringFromFuncPtr[T ~string, U any](value *U, f func(*U) T) NullString[T] {
+	if value == nil {
+		return NewNullString[T]("", false)
+	}
+	return NullStringFrom(f(value))
 }
 
 func (v NullString[T]) Std() sql.NullString {
@@ -138,15 +141,18 @@ func ZeroStringFromPtr[T ~string](value *T) ZeroString[T] {
 	return ZeroStringFrom(*value)
 }
 
-func ZeroStringFromFunc[T ~string, U any](value U, f func(U) T) ZeroString[T] {
-	return ZeroStringFrom(f(value))
-}
-
-func ZeroStringFromPtrFunc[T ~string, U any](value *U, f func(U) T) ZeroString[T] {
+func ZeroStringFromFunc[T ~string, U any](value *U, f func(U) T) ZeroString[T] {
 	if value == nil {
 		return NewZeroString[T]("", false)
 	}
 	return ZeroStringFrom(f(*value))
+}
+
+func ZeroStringFromFuncPtr[T ~string, U any](value *U, f func(*U) T) ZeroString[T] {
+	if value == nil {
+		return NewZeroString[T]("", false)
+	}
+	return ZeroStringFrom(f(value))
 }
 
 func (v ZeroString[T]) Std() sql.NullString {
