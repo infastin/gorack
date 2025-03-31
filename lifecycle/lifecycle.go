@@ -120,6 +120,10 @@ func (l *Lifecycle) Go(actor Actor) {
 	l.hooks = append(l.hooks, hook)
 }
 
+func (l *Lifecycle) GoFunc(fn func(ctx context.Context) error) {
+	l.Go(Actor{Run: fn})
+}
+
 func (l *Lifecycle) Run(ctx context.Context) error {
 	if len(l.hooks) == 0 {
 		return nil
