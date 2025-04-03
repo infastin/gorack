@@ -54,7 +54,11 @@ func (r *Router) Handle(pattern string, handler http.Handler) {
 	if r.strip != "" {
 		handler = http.StripPrefix(r.strip, handler)
 	}
-	r.mux.Handle(pattern, r.middleware(handler))
+	if r.middleware != nil {
+		r.mux.Handle(pattern, r.middleware(handler))
+	} else {
+		r.mux.Handle(pattern, handler)
+	}
 }
 
 func (r *Router) HandleFunc(pattern string, handler http.HandlerFunc) {
