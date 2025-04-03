@@ -25,6 +25,8 @@ func (w *notFoundWriter) Write(data []byte) (int, error) {
 	return w.ResponseWriter.Write(data)
 }
 
+// Middleware that allows to catch http.StatusNotFound codes
+// written to http.ResponseWriter and handle them.
 func NotFound(handler http.HandlerFunc) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

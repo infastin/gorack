@@ -25,6 +25,8 @@ func (w *methodNotAllowedWriter) Write(data []byte) (int, error) {
 	return w.ResponseWriter.Write(data)
 }
 
+// Middleware that allows to catch http.StatusMethodNotAllowed codes
+// written to http.ResponseWriter and handle them.
 func MethodNotAllowed(handler http.HandlerFunc) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
