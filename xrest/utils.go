@@ -23,6 +23,9 @@ func routePathJoin(elems ...string) string {
 
 func muxPrefix(prefix string) (pattern, strip string) {
 	pattern = routePathJoin("/", prefix)
+	if pattern[len(pattern)-1] != '/' {
+		pattern += "/"
+	}
 	return pattern, pattern[:len(pattern)-1]
 }
 
