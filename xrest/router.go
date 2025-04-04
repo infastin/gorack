@@ -3,6 +3,7 @@ package xrest
 import (
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 type Router struct {
@@ -49,7 +50,13 @@ func (r *Router) Use(middlewares ...Middleware) {
 
 func (r *Router) Handle(pattern string, handler http.Handler) {
 	if r.prefix != "" {
-		pattern, _ = url.JoinPath(r.prefix, pattern)
+		slashIdx := strings.IndexByte(pattern, '/')
+		if slashIdx == -1 {
+			panic("xrest: invalid pattern")
+		}
+		methodHost := pattern[:slashIdx]
+		path, _ := url.JoinPath(r.prefix, pattern[slashIdx:])
+		pattern = methodHost + path
 	}
 	if r.strip != "" {
 		handler = http.StripPrefix(r.strip, handler)
