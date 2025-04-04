@@ -5,17 +5,25 @@ import (
 	"io"
 	"mime"
 	"net/http"
-	"net/url"
 	"path"
 	"strings"
 )
 
-func muxPrefix(prefix string) (pattern, strip string, err error) {
-	pattern, err = url.JoinPath("/", prefix, "/")
-	if err != nil {
-		return "", "", err
+func routePathJoin(elems ...string) string {
+	elems = append([]string{"/"}, elems...)
+	result := path.Join(elems...)
+	if result[len(result)-1] != '/' {
+		last := elems[len(elems)-1]
+		if last != "" && last[len(last)-1] == '/' {
+			result += "/"
+		}
 	}
-	return pattern, pattern[:len(pattern)-1], nil
+	return result
+}
+
+func muxPrefix(prefix string) (pattern, strip string) {
+	pattern = routePathJoin("/", prefix)
+	return pattern, pattern[:len(pattern)-1]
 }
 
 func fullExt(filename string) string {

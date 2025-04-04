@@ -3,6 +3,7 @@ package xrest
 import (
 	"net/http"
 	"net/url"
+	"path"
 	"strings"
 )
 
@@ -23,18 +24,13 @@ func NewRouter() *Router {
 }
 
 func (r *Router) Group(prefix string, fn func(*Router)) {
-	prefix, strip, err := muxPrefix(prefix)
-	if err != nil {
-		panic("invalid prefix: " + err.Error())
-	}
-
+	prefix, strip := muxPrefix(prefix)
 	g := &Router{
 		mux:        r.mux,
 		prefix:     prefix,
 		strip:      strip,
 		middleware: r.middleware,
 	}
-
 	fn(g)
 }
 
@@ -54,9 +50,8 @@ func (r *Router) Handle(pattern string, handler http.Handler) {
 		if slashIdx == -1 {
 			panic("xrest: invalid pattern")
 		}
-		methodHost := pattern[:slashIdx]
-		path, _ := url.JoinPath(r.prefix, pattern[slashIdx:])
-		pattern = methodHost + path
+		// [METHOD ][HOST]<PREFIX>[/PATH]
+		pattern = pattern[:slashIdx] + routePathJoin(r.prefix, pattern[slashIdx:])
 	}
 	if r.strip != "" {
 		handler = http.StripPrefix(r.strip, handler)
