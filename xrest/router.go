@@ -2,8 +2,6 @@ package xrest
 
 import (
 	"net/http"
-	"net/url"
-	"path"
 	"strings"
 )
 
