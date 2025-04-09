@@ -3,8 +3,8 @@ package shot
 import "errors"
 
 var (
-	ErrRunning    = errors.New("already running")
-	ErrStopped    = errors.New("stopped")
-	ErrNotRunning = errors.New("not running")
-	ErrClosed     = errors.New("closed")
+	// Tried to call Start on resource in the the Running state.
+	ErrRunning = errors.New("already running")
+	// Tried to call Start on the resource in the Closed state.
+	ErrClosed = errors.New("closed")
 )
