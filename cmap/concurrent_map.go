@@ -74,13 +74,14 @@ func (m ConcurrentMap[K, V]) Set(key K, value V) {
 	shard.mu.Unlock()
 }
 
-// Callback to return new element to be inserted into the map
+// Callback to return new element to be inserted into the map.
 // It is called while lock is held, therefore it MUST NOT
 // try to access other keys in same map, as it can lead to deadlock since
-// Go sync.RWLock is not reentrant
-type UpsertCb[V any] func(exist bool, valueInMap V, newValue V) V
+// Go sync.RWLock is not reentrant.
+type UpsertCb[V any] func(exist bool, valueInMap, newValue V) V
 
-// Insert or Update - updates existing element or inserts a new one using UpsertCb.
+// Updates existing element or inserts a new one using UpsertCb.
+// Returns updated/inserted element.
 func (m ConcurrentMap[K, V]) Upsert(key K, value V, cb UpsertCb[V]) (res V) {
 	shard := m.getShard(key)
 	shard.mu.Lock()
@@ -89,6 +90,29 @@ func (m ConcurrentMap[K, V]) Upsert(key K, value V, cb UpsertCb[V]) (res V) {
 	shard.items[key] = res
 	shard.mu.Unlock()
 	return res
+}
+
+// Callback to update an element in the map.
+// It is called while lock is held, therefore it MUST NOT
+// try to access other keys in same map, as it can lead to deadlock since
+// Go sync.RWLock is not reentrant.
+type UpdateCb[V any] func(valueInMap, newValue V) V
+
+// Updates an existing element using UpdateCb.
+// If the element doesn't exist, returns false.
+// Otherwise returns updated element and true.
+func (m ConcurrentMap[K, V]) Update(key K, value V, cb UpdateCb[V]) (res V, updated bool) {
+	shard := m.getShard(key)
+	shard.mu.Lock()
+	v, ok := shard.items[key]
+	if !ok {
+		shard.mu.Unlock()
+		return res, false
+	}
+	res = cb(v, value)
+	shard.items[key] = res
+	shard.mu.Unlock()
+	return res, true
 }
 
 // Sets the given value under the specified key if no value was associated with it.
