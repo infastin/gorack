@@ -373,13 +373,19 @@ func TestKeys(t *testing.T) {
 	}
 }
 
-func TestUpsert(t *testing.T) {
-	dolphin := Animal{"dolphin"}
-	whale := Animal{"whale"}
-	tiger := Animal{"tiger"}
-	lion := Animal{"lion"}
+func FuzzUpsert(f *testing.F) {
+	testcases := []string{"dolphin", "whale", "tiger", "lion"}
 
-	cb := func(exists bool, valueInMap Animal, newValue Animal) Animal {
+	for i := range testcases {
+		for j := range testcases {
+			f.Add(testcases[i], testcases[i])
+			f.Add(testcases[i], testcases[j])
+			f.Add(testcases[j], testcases[i])
+			f.Add(testcases[j], testcases[j])
+		}
+	}
+
+	cb := func(exists bool, valueInMap, newValue Animal) Animal {
 		if !exists {
 			return newValue
 		}
@@ -387,25 +393,124 @@ func TestUpsert(t *testing.T) {
 		return valueInMap
 	}
 
-	m := New[Animal]()
-	m.Set("marine", dolphin)
-	m.Upsert("marine", whale, cb)
-	m.Upsert("predator", tiger, cb)
-	m.Upsert("predator", lion, cb)
+	f.Fuzz(func(t *testing.T, xName, yName string) {
+		x := Animal{xName}
+		y := Animal{yName}
 
-	if m.Count() != 2 {
-		t.Error("map should contain exactly two elements.")
+		m := New[Animal]()
+
+		m.Upsert("upsert-x", x, cb)
+		if animal, ok := m.Get("upsert-x"); ok {
+			if animal.name != x.name {
+				t.Errorf("upsert-x failed: got=%s expected=%s", animal.name, x.name)
+			}
+		} else {
+			t.Error("upsert-x doesn't exist")
+		}
+
+		m.Upsert("upsert-y", y, cb)
+		if animal, ok := m.Get("upsert-y"); ok {
+			if animal.name != y.name {
+				t.Errorf("upsert-y failed: got=%s expected=%s", animal.name, y.name)
+			}
+		} else {
+			t.Error("upsert-y doesn't exist")
+		}
+
+		m.Set("set-upsert", x)
+		m.Upsert("set-upsert", y, cb)
+		if animal, ok := m.Get("set-upsert"); ok {
+			expected := x.name + y.name
+			if animal.name != expected {
+				t.Errorf("set-upsert failed: got=%s expected=%s", animal.name, expected)
+			}
+		} else {
+			t.Error("set-upsert doesn't exist")
+		}
+
+		m.Upsert("upsert-set", y, cb)
+		m.Set("upsert-set", x)
+		if animal, ok := m.Get("upsert-set"); ok {
+			if animal.name != x.name {
+				t.Errorf("upsert-set failed: got=%s expected=%s", animal.name, x.name)
+			}
+		} else {
+			t.Error("upsert-set doesn't exist")
+		}
+
+		m.Upsert("upsert-upsert", x, cb)
+		m.Upsert("upsert-upsert", y, cb)
+		if animal, ok := m.Get("upsert-upsert"); ok {
+			expected := x.name + y.name
+			if animal.name != expected {
+				t.Errorf("upsert-upsert failed: got=%s expected=%s", animal.name, expected)
+			}
+		} else {
+			t.Error("upsert-upsert doesn't exist")
+		}
+	})
+}
+
+func FuzzUpdate(f *testing.F) {
+	testcases := []string{"dolphin", "whale", "tiger", "lion"}
+
+	for i := range testcases {
+		for j := range testcases {
+			f.Add(testcases[i], testcases[i])
+			f.Add(testcases[i], testcases[j])
+			f.Add(testcases[j], testcases[i])
+			f.Add(testcases[j], testcases[j])
+		}
 	}
 
-	marineAnimals, ok := m.Get("marine")
-	if marineAnimals.name != "dolphinwhale" || !ok {
-		t.Error("Set, then Upsert failed")
+	cb := func(valueInMap, newValue Animal) Animal {
+		valueInMap.name += newValue.name
+		return valueInMap
 	}
 
-	predators, ok := m.Get("predator")
-	if !ok || predators.name != "tigerlion" {
-		t.Error("Upsert, then Upsert failed")
-	}
+	f.Fuzz(func(t *testing.T, xName, yName string) {
+		x := Animal{xName}
+		y := Animal{yName}
+
+		m := New[Animal]()
+
+		m.Update("update-x", x, cb)
+		if _, ok := m.Get("update-x"); ok {
+			t.Error("update-x exists")
+		}
+
+		m.Update("update-y", y, cb)
+		if _, ok := m.Get("update-y"); ok {
+			t.Error("update-y exists")
+		}
+
+		m.Set("set-update", x)
+		m.Update("set-update", y, cb)
+		if animal, ok := m.Get("set-update"); ok {
+			expected := x.name + y.name
+			if animal.name != expected {
+				t.Errorf("set-update failed: got=%s expected=%s", animal.name, expected)
+			}
+		} else {
+			t.Error("set-update doesn't exist")
+		}
+
+		m.Update("update-set", y, cb)
+		m.Set("update-set", x)
+		if animal, ok := m.Get("update-set"); ok {
+			if animal.name != x.name {
+				t.Errorf("update-set failed: got=%s expected=%s", animal.name, x.name)
+			}
+		} else {
+			t.Error("update-set doesn't exist")
+		}
+
+		m.Update("update-update", x, cb)
+		m.Update("update-update", y, cb)
+		if _, ok := m.Get("update-update"); ok {
+			t.Error("update-update")
+		}
+	})
 }
 
 func TestKeysWhenRemoving(t *testing.T) {
