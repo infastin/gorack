@@ -2,7 +2,7 @@ module github.com/infastin/gorack/slog/zerolog
 
 go 1.23
 
-require github.com/rs/zerolog v1.33.0
+require github.com/rs/zerolog v1.34.0
 
 require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
