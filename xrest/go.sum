@@ -1,6 +1,6 @@
-github.com/infastin/gorack/constraints v1.0.1 h1:AJoEOvKAXmvSQd+LJSqRseGFlokThQF/DlkLuq938ds=
-github.com/infastin/gorack/constraints v1.0.1/go.mod h1:UrKQOyJgH4bJl93jfGAfTUuitDBoJPU2BBGm0sR1v2M=
+github.com/infastin/gorack/constraints v1.0.2 h1:oOQEokQuM3xGEf3vLwdU4p8xlHbKUS96L6BbsVogKPw=
+github.com/infastin/gorack/constraints v1.0.2/go.mod h1:UrKQOyJgH4bJl93jfGAfTUuitDBoJPU2BBGm0sR1v2M=
 github.com/infastin/gorack/fastconv v1.0.1 h1:ckIcczo07NMKoh4KNZJJCzfpx8fLmWVXZboIvyXbdDU=
 github.com/infastin/gorack/fastconv v1.0.1/go.mod h1:g6FJHEe8FkxJSxkP3kUgazGNRWo7tuK0Ch7+gEa6pQU=
-github.com/infastin/gorack/opt v1.4.3 h1:KLOt/rf2u3zIOjpA/1GLMpU4pD2dFrhWrWqkxRLTbUY=
-github.com/infastin/gorack/opt v1.4.3/go.mod h1:ZoBK9P6OQlcjpsMouZiVhR2+wmZxY4waB7TwFqy/gWU=
+github.com/infastin/gorack/opt v1.4.4 h1:yKe0bBtxJfEHPiIal8q92cN6UMUS7XFSHwQblSGTXxE=
+github.com/infastin/gorack/opt v1.4.4/go.mod h1:i1H3a0WuobHF3TrNcOe3M7nfVxeANJw0dgDIxwsUQOI=
