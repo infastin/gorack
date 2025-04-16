@@ -1,6 +1,6 @@
 module github.com/infastin/gorack/opt
 
-go 1.23
+go 1.23.0
 
 require (
 	github.com/infastin/gorack/constraints v1.0.0
