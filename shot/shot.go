@@ -12,10 +12,10 @@ type E struct {
 
 // Starts a goroutine and returns E, which stores the error returned from the goroutine.
 // Does not provide any way to determite when goroutine exited.
-func GoErr(g func() error) *E {
+func GoErr(f func() error) *E {
 	e := &E{err: atomic.Value{}}
 	go func() {
-		if err := g(); err != nil {
+		if err := f(); err != nil {
 			e.err.Store(err)
 		}
 	}()
@@ -40,21 +40,45 @@ type G struct {
 	err atomic.Value
 }
 
-// Starts a goroutine and creates One, which is passed to the goroutine
-// to control its state.
+// Starts a goroutine and creates One,
+// which is passed to the goroutine to control its state.
 //
 // Returns G, which can be used to control the goroutine
 // and get the error returned from the goroutine.
 //
 // NOTE: Goroutine must make use of (*One).Start for G to function properly.
-func Go(ctx context.Context, g func(state *One) error) *G {
-	state := &G{s: NewOne(ctx), err: atomic.Value{}}
+func Go(ctx context.Context, f func(state *One) error) *G {
+	g := &G{s: NewOne(ctx), err: atomic.Value{}}
 	go func() {
-		if err := g(&state.s); err != nil {
-			state.err.Store(err)
+		if err := f(&g.s); err != nil {
+			g.err.Store(err)
 		}
 	}()
-	return state
+	return g
+}
+
+// Starts a goroutine and creates One, whose Context
+// is passed to the goroutine to control its state.
+//
+// Returns G, which can be used to control the goroutine
+// and get the error returned from the goroutine.
+//
+// NOTE: Compared to Go function, this one calls (*One).Start before f is called
+// and calls stop function returned from (*One).Start when f returns.
+func GoCtx(ctx context.Context, f func(ctx context.Context) error) *G {
+	g := &G{s: NewOne(ctx), err: atomic.Value{}}
+	go func() {
+		stop, err := g.s.Start()
+		if err != nil {
+			g.err.Store(err)
+			return
+		}
+		if err := f(g.s.Context()); err != nil {
+			g.err.Store(err)
+		}
+		stop()
+	}()
+	return g
 }
 
 // Closes One passed to the goroutine.
