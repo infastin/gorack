@@ -30,7 +30,6 @@ func TestOne_Start_Close(t *testing.T) {
 		_, err := state.Start()
 		if err == nil {
 			t.Error("Start(): expected an error")
-			return
 		} else {
 			t.Logf("Start(): got expected error: %s", err.Error())
 		}
@@ -50,7 +49,6 @@ func TestOne_Start_Close(t *testing.T) {
 		_, err := state.Start()
 		if err == nil {
 			t.Error("Start(): expected an error")
-			return
 		} else {
 			t.Logf("Start(): got expected error: %s", err.Error())
 		}
@@ -62,13 +60,13 @@ func TestOne_Start_stop(t *testing.T) {
 	state := shot.NewOne(context.Background())
 
 	waitGo(1, func(wg *sync.WaitGroup, _ int) {
+		defer wg.Done()
 		stop, err := state.Start()
 		if err != nil {
 			t.Errorf("Start(): unexpected error: %s", err.Error())
 			return
 		}
 		stop()
-		wg.Done()
 	})
 
 	if !shouldBe(t, &state, shot.StateClosed) {
@@ -79,7 +77,6 @@ func TestOne_Start_stop(t *testing.T) {
 		_, err := state.Start()
 		if err == nil {
 			t.Error("Start(): expected an error")
-			return
 		} else {
 			t.Logf("Start(): got expected error: %s", err.Error())
 		}

@@ -66,7 +66,6 @@ func TestXor_Start_Close(t *testing.T) {
 		_, err := state.Start(context.Background())
 		if err == nil {
 			t.Error("Start(): expected an error")
-			return
 		} else {
 			t.Logf("Start(): got expected error: %s", err.Error())
 		}
@@ -80,13 +79,13 @@ func TestXor_Start_stop(t *testing.T) {
 
 	for i := range numGoroutines {
 		waitGo(1, func(wg *sync.WaitGroup, _ int) {
+			defer wg.Done()
 			stop, err := state.Start(context.Background())
 			if err != nil {
 				t.Errorf("%d'th goroutine: Start(): unexpected error: %s", i, err.Error())
 				return
 			}
 			stop()
-			wg.Done()
 		})
 	}
 
@@ -107,7 +106,6 @@ func TestXor_Start_stop(t *testing.T) {
 		_, err := state.Start(context.Background())
 		if err == nil {
 			t.Error("Start(): expected an error")
-			return
 		} else {
 			t.Logf("Start(): got expected error: %s", err.Error())
 		}
@@ -170,7 +168,6 @@ func TestXor_Start_Stop(t *testing.T) {
 		_, err := state.Start(context.Background())
 		if err == nil {
 			t.Error("Start(): expected an error")
-			return
 		} else {
 			t.Logf("Start(): got expected error: %s", err.Error())
 		}
