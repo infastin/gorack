@@ -61,8 +61,8 @@ func (m *Many) Start() (stop func(), err error) {
 		} else {
 			m.state = StateStopped
 		}
-		m.mu.Unlock()
 		close(m.done)
+		m.mu.Unlock()
 	}, nil
 }
 
@@ -78,9 +78,13 @@ func (m *Many) Start() (stop func(), err error) {
 // doesn't affect the resource in any way.
 func (m *Many) Close(ctx context.Context) error {
 	m.mu.Lock()
-	if m.state == StateCreated {
+	switch m.state {
+	case StateCreated:
 		m.state = StateClosed
 		close(m.done)
+	case StateStopped:
+		m.state = StateClosed
+		// done is already closed here
 	}
 	m.mu.Unlock()
 

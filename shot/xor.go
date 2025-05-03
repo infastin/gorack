@@ -80,15 +80,17 @@ retry:
 		} else {
 			x.state = StateStopped
 		}
-		x.mu.Unlock()
 		close(x.done)
+		x.mu.Unlock()
 	}, nil
 }
 
 // Transitions the resource into Stopped state,
 // cancels Context returned from Context method.
 //
-// If resource is in the Running state waits for resource to call stop function returned
+// If resource is in the Closed state, returns ErrClosed.
+//
+// If resource is in the Running state, waits for resource to call stop function returned
 // from Start method (i.e. waits for resource to exit).
 //
 // Context passed to this function can be canceled to pass control back to the caller
@@ -96,9 +98,13 @@ retry:
 // doesn't affect the resource in any way.
 func (x *Xor) Stop(ctx context.Context) error {
 	x.mu.Lock()
-	if x.state == StateCreated {
+	switch x.state {
+	case StateCreated:
 		x.state = StateStopped
 		close(x.done)
+	case StateClosed:
+		x.mu.Unlock()
+		return ErrClosed
 	}
 	x.mu.Unlock()
 
@@ -125,9 +131,13 @@ func (x *Xor) Stop(ctx context.Context) error {
 // doesn't affect the resource in any way.
 func (x *Xor) Close(ctx context.Context) error {
 	x.mu.Lock()
-	if x.state == StateCreated {
+	switch x.state {
+	case StateCreated:
 		x.state = StateClosed
 		close(x.done)
+	case StateStopped:
+		x.state = StateClosed
+		// done is already closed here
 	}
 	x.mu.Unlock()
 
