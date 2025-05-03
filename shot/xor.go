@@ -32,8 +32,7 @@ func NewXor(ctx context.Context) Xor {
 	}
 }
 
-// Puts the resource in the Running state
-// and returns stop function that is used
+// Puts the resource in the Running state and returns stop function that is used
 // to signal that resource has exited.
 //
 // If the resource is already running, cancels Context returned from Context method
@@ -48,6 +47,10 @@ func NewXor(ctx context.Context) Xor {
 // channel returned from Done method to become closed.
 //
 // Returns an error if the resource has been closed.
+//
+// Context passed to this method can be canceled to pass control back to the caller
+// if resource takes too much time to restart. In such case, the resource will eventually close,
+// but will not start again.
 func (x *Xor) Start(ctx context.Context) (stop func(), err error) {
 	x.mu.Lock()
 	defer x.mu.Unlock()
@@ -93,8 +96,8 @@ retry:
 // If resource is in the Running state, waits for resource to call stop function returned
 // from Start method (i.e. waits for resource to exit).
 //
-// Context passed to this function can be canceled to pass control back to the caller
-// if resource takes too much time to exit. Canceling Context passed to this function
+// Context passed to this method can be canceled to pass control back to the caller
+// if resource takes too much time to exit. Canceling Context passed to this method
 // doesn't affect the resource in any way.
 func (x *Xor) Stop(ctx context.Context) error {
 	x.mu.Lock()
@@ -126,8 +129,8 @@ func (x *Xor) Stop(ctx context.Context) error {
 // If resource is in the Running state, waits for resource to call stop function
 // returned from Start method (i.e. waits for resource to exit).
 //
-// Context passed to this function can be canceled to pass control back to the caller
-// if resource takes too much time to exit. Canceling Context passed to this function
+// Context passed to this method can be canceled to pass control back to the caller
+// if resource takes too much time to exit. Canceling Context passed to this method
 // doesn't affect the resource in any way.
 func (x *Xor) Close(ctx context.Context) error {
 	x.mu.Lock()

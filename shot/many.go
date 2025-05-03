@@ -73,8 +73,8 @@ func (m *Many) Start() (stop func(), err error) {
 // If resource is in the Running state, waits for resource to call stop function
 // returned from Start method (i.e. waits for resource to exit).
 //
-// Context passed to this function can be canceled to pass control back to the caller
-// if resource takes too much time to exit. Canceling Context passed to this function
+// Context passed to this method can be canceled to pass control back to the caller
+// if resource takes too much time to exit. Canceling Context passed to this method
 // doesn't affect the resource in any way.
 func (m *Many) Close(ctx context.Context) error {
 	m.mu.Lock()

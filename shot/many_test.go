@@ -1,0 +1,104 @@
+package shot_test
+
+import (
+	"context"
+	"sync"
+	"testing"
+
+	"github.com/infastin/gorack/shot"
+)
+
+func TestMany_Start_Close(t *testing.T) {
+	state := shot.NewMany(context.Background())
+
+	waitGo(1, func(wg *sync.WaitGroup, _ int) {
+		stop, err := state.Start()
+		wg.Done()
+		if err != nil {
+			t.Errorf("Start(): unexpected error: %s", err.Error())
+			return
+		}
+		<-state.Context().Done()
+		stop()
+	})
+
+	if !shouldBe(t, &state, shot.StateRunning) {
+		return
+	}
+
+	waitGo(1, func(wg *sync.WaitGroup, _ int) {
+		_, err := state.Start()
+		if err == nil {
+			t.Error("Start(): expected an error")
+			return
+		} else {
+			t.Logf("Start(): got expected error: %s", err.Error())
+		}
+		wg.Done()
+	})
+
+	if !shouldBe(t, &state, shot.StateRunning) {
+		return
+	}
+
+	if err := state.Close(context.Background()); err != nil {
+		t.Errorf("Close(): unexpected error: %s", err.Error())
+		return
+	}
+
+	if !shouldBe(t, &state, shot.StateClosed) {
+		return
+	}
+
+	waitGo(1, func(wg *sync.WaitGroup, _ int) {
+		_, err := state.Start()
+		if err == nil {
+			t.Error("Start(): expected an error")
+			return
+		} else {
+			t.Logf("Start(): got expected error: %s", err.Error())
+		}
+		wg.Done()
+	})
+}
+
+func TestMany_Start_stop(t *testing.T) {
+	const numGoroutines = 5
+	state := shot.NewMany(context.Background())
+
+	for i := range numGoroutines {
+		waitGo(1, func(wg *sync.WaitGroup, _ int) {
+			stop, err := state.Start()
+			if err != nil {
+				t.Errorf("%d'th goroutine: Start(): unexpected error: %s", i, err.Error())
+				return
+			}
+			stop()
+			wg.Done()
+		})
+	}
+
+	if !shouldBe(t, &state, shot.StateStopped) {
+		return
+	}
+
+	if err := state.Close(context.Background()); err != nil {
+		t.Errorf("Close(): unexpected error: %s", err.Error())
+		return
+	}
+
+	if !shouldBe(t, &state, shot.StateClosed) {
+		return
+	}
+
+	waitGo(1, func(wg *sync.WaitGroup, _ int) {
+		_, err := state.Start()
+		if err == nil {
+			t.Error("Start(): expected an error")
+			return
+		} else {
+			t.Logf("Start(): got expected error: %s", err.Error())
+		}
+		wg.Done()
+	})
+}
