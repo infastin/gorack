@@ -6,7 +6,6 @@ import (
 )
 
 // Returns an iterator that produces elements from the union of two sorted ranges.
-// Reference: https://en.cppreference.com/w/cpp/algorithm/set_union.
 func SetUnion[E cmp.Ordered](s1, s2 iter.Seq[E]) iter.Seq[E] {
 	return func(yield func(E) bool) {
 		next1, stop1 := iter.Pull(s1)
@@ -53,8 +52,8 @@ func SetUnion[E cmp.Ordered](s1, s2 iter.Seq[E]) iter.Seq[E] {
 	}
 }
 
-// Returns an iterator that produces elements from the union of two sorted ranges.
-// Reference: https://en.cppreference.com/w/cpp/algorithm/set_union.
+// Returns an iterator that produces elements from the union of two sorted ranges
+// using a comparison function.
 func SetUnionFunc[E any](s1, s2 iter.Seq[E], comp func(E, E) int) iter.Seq[E] {
 	return func(yield func(E) bool) {
 		next1, stop1 := iter.Pull(s1)
@@ -102,7 +101,6 @@ func SetUnionFunc[E any](s1, s2 iter.Seq[E], comp func(E, E) int) iter.Seq[E] {
 }
 
 // Returns an iterator that produces elements from the intersection of two sorted ranges.
-// Reference: https://en.cppreference.com/w/cpp/algorithm/set_intersection.
 func SetIntersection[E cmp.Ordered](s1, s2 iter.Seq[E]) iter.Seq[E] {
 	return func(yield func(E) bool) {
 		next1, stop1 := iter.Pull(s1)
@@ -130,8 +128,8 @@ func SetIntersection[E cmp.Ordered](s1, s2 iter.Seq[E]) iter.Seq[E] {
 	}
 }
 
-// Returns an iterator that produces elements from the intersection of two sorted ranges.
-// Reference: https://en.cppreference.com/w/cpp/algorithm/set_intersection.
+// Returns an iterator that produces elements from the intersection of two sorted ranges
+// using a comparison function.
 func SetIntersectionFunc[E any](s1, s2 iter.Seq[E], comp func(E, E) int) iter.Seq[E] {
 	return func(yield func(E) bool) {
 		next1, stop1 := iter.Pull(s1)
@@ -161,7 +159,6 @@ func SetIntersectionFunc[E any](s1, s2 iter.Seq[E], comp func(E, E) int) iter.Se
 
 // Returns an iterator that produces elements from the first sorted range
 // that are not found in the second sorted range.
-// Reference: https://en.cppreference.com/w/cpp/algorithm/set_difference.
 func SetDifference[E cmp.Ordered](s1, s2 iter.Seq[E]) iter.Seq[E] {
 	return func(yield func(E) bool) {
 		next1, stop1 := iter.Pull(s1)
@@ -199,8 +196,7 @@ func SetDifference[E cmp.Ordered](s1, s2 iter.Seq[E]) iter.Seq[E] {
 }
 
 // Returns an iterator that produces elements from the first sorted range
-// that are not found in the second sorted range.
-// Reference: https://en.cppreference.com/w/cpp/algorithm/set_difference.
+// that are not found in the second sorted range using a comparison function.
 func SetDifferenceFunc[E any](s1, s2 iter.Seq[E], comp func(E, E) int) iter.Seq[E] {
 	return func(yield func(E) bool) {
 		next1, stop1 := iter.Pull(s1)
@@ -248,7 +244,6 @@ const (
 )
 
 // Returns an iterator that produces elements from the symmetric difference of two sorted ranges.
-// Reference: https://en.cppreference.com/w/cpp/algorithm/set_symmetric_difference.
 func SetSymmetricDifference[E cmp.Ordered](s1, s2 iter.Seq[E]) iter.Seq2[E, DiffElemType] {
 	return func(yield func(E, DiffElemType) bool) {
 		next1, stop1 := iter.Pull(s1)
@@ -295,8 +290,8 @@ func SetSymmetricDifference[E cmp.Ordered](s1, s2 iter.Seq[E]) iter.Seq2[E, Diff
 	}
 }
 
-// Returns an iterator that produces elements from the symmetric difference of two sorted ranges.
-// Reference: https://en.cppreference.com/w/cpp/algorithm/set_symmetric_difference.
+// Returns an iterator that produces elements from the symmetric difference of two sorted ranges
+// using a comparison function
 func SetSymmetricDifferenceFunc[E any](s1, s2 iter.Seq[E], comp func(E, E) int) iter.Seq2[E, DiffElemType] {
 	return func(yield func(E, DiffElemType) bool) {
 		next1, stop1 := iter.Pull(s1)

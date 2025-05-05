@@ -5,6 +5,7 @@ import (
 	"iter"
 )
 
+// Returns an iterator that produces elements from the union of two sequences.
 func Union[E cmp.Ordered](seqs ...iter.Seq[E]) iter.Seq[E] {
 	return func(yield func(E) bool) {
 		seen := make(map[E]struct{})
@@ -22,6 +23,7 @@ func Union[E cmp.Ordered](seqs ...iter.Seq[E]) iter.Seq[E] {
 	}
 }
 
+// Returns an iterator that produces elements from the intersection of two sequences.
 func Intersection[E cmp.Ordered](s1, s2 iter.Seq[E]) iter.Seq[E] {
 	return func(yield func(E) bool) {
 		seen := make(map[E]struct{})
@@ -38,6 +40,7 @@ func Intersection[E cmp.Ordered](s1, s2 iter.Seq[E]) iter.Seq[E] {
 	}
 }
 
+// Returns an iterator that produces elements from the difference of two sequences.
 func Difference[E cmp.Ordered](s1, s2 iter.Seq[E]) iter.Seq[E] {
 	return func(yield func(E) bool) {
 		seen := make(map[E]struct{})
@@ -54,6 +57,7 @@ func Difference[E cmp.Ordered](s1, s2 iter.Seq[E]) iter.Seq[E] {
 	}
 }
 
+// Returns an iterator that produces elements from the symmetric difference of two sequences.
 func SymmetricDifference[E cmp.Ordered](s1, s2 iter.Seq[E]) iter.Seq2[E, DiffElemType] {
 	return func(yield func(E, DiffElemType) bool) {
 		firstSeen := make(map[E]struct{})
