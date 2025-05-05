@@ -1,4 +1,4 @@
-package xrest
+package xhttp
 
 import (
 	"encoding"
@@ -70,6 +70,8 @@ func (e *BindParamsValueError) Unwrap() error {
 	return e.Err
 }
 
+// Decodes request parameters (query, header, path) into a structure
+// using structure tags.
 func BindParams(r *http.Request, output any) error {
 	rv := reflect.ValueOf(output)
 	if rv.Kind() != reflect.Pointer || rv.IsNil() {

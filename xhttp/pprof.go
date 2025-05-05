@@ -1,4 +1,4 @@
-package xrest
+package xhttp
 
 import (
 	"net/http"
@@ -43,9 +43,4 @@ func ProfilerHandler() http.Handler {
 // and returns pattern and http handler for (*http.ServeMux).Handle-like methods.
 func Profiler(prefix string) (string, http.Handler) {
 	return Prefix(prefix, ProfilerHandler())
-}
-
-// Deprecated: use Profiler.
-func Debug(prefix string) (string, http.Handler) {
-	return Profiler(prefix)
 }

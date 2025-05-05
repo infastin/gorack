@@ -1,15 +1,16 @@
-package xrest
+package xhttp
 
 import (
-	goctx "context"
+	"context"
 	"net/http"
 	"time"
 )
 
+// Middleware that will cancel request's context after the specified duration.
 func Timeout(timeout time.Duration) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx, cancel := goctx.WithTimeout(r.Context(), timeout)
+			ctx, cancel := context.WithTimeout(r.Context(), timeout)
 			defer cancel()
 			r = r.WithContext(ctx)
 			next.ServeHTTP(w, r)
@@ -17,10 +18,12 @@ func Timeout(timeout time.Duration) Middleware {
 	}
 }
 
+// Middleware that will cancel request's context with the given cause
+// after the specified duration
 func TimeoutCause(timeout time.Duration, cause error) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx, cancel := goctx.WithTimeoutCause(r.Context(), timeout, cause)
+			ctx, cancel := context.WithTimeoutCause(r.Context(), timeout, cause)
 			defer cancel()
 			r = r.WithContext(ctx)
 			next.ServeHTTP(w, r)

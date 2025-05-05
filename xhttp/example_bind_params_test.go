@@ -1,4 +1,4 @@
-package xrest_test
+package xhttp_test
 
 import (
 	"fmt"
@@ -7,8 +7,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 
-	"github.com/infastin/gorack/opt"
-	"github.com/infastin/gorack/xrest"
+	"github.com/infastin/gorack/xhttp"
 )
 
 func ExampleBindParams() {
@@ -21,19 +20,19 @@ func ExampleBindParams() {
 
 	type Params struct {
 		Inline      `inline:""`
-		Foo         int              `query:"foo"`
-		NullableFoo opt.NullInt[int] `query:"nullable_foo"`
-		Bar         int              `header:"bar"`
-		Baz         string           `path:"baz"`
+		Foo         int    `query:"foo"`
+		NullableFoo *int   `query:"nullable_foo"`
+		Bar         int    `header:"bar"`
+		Baz         string `path:"baz"`
 	}
 
 	mux.HandleFunc("GET /params/{baz}", func(w http.ResponseWriter, r *http.Request) {
 		var params Params
-		if err := xrest.BindParams(r, &params); err != nil {
+		if err := xhttp.BindParams(r, &params); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		xrest.JSON(w, http.StatusOK, &params)
+		xhttp.JSON(w, http.StatusOK, &params)
 	})
 
 	ts := httptest.NewServer(mux)

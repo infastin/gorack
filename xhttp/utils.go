@@ -1,4 +1,4 @@
-package xrest
+package xhttp
 
 import (
 	"bytes"
