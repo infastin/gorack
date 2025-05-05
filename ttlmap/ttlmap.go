@@ -18,6 +18,7 @@ type bucket[K comparable, V any] struct {
 	newestEntry time.Time
 }
 
+// A map with expirable items.
 type Map[K comparable, V any] struct {
 	items             map[K]*item[K, V]
 	mu                sync.Mutex
@@ -27,6 +28,10 @@ type Map[K comparable, V any] struct {
 }
 
 // Creates a map with expirable items.
+// Whenever key-value pair is inserted, a cleanup bucket is chosed
+// and inserted key-value pair is put into the bucket.
+// With an interval of `ttl / numBuckets` cleanup bucket is chosed and
+// every expired item in that bucket is removed from the map (and from the bucket).
 func New[K comparable, V any](ttl time.Duration, numBuckets uint8) *Map[K, V] {
 	m := &Map[K, V]{
 		items:             make(map[K]*item[K, V]),
@@ -41,7 +46,7 @@ func New[K comparable, V any](ttl time.Duration, numBuckets uint8) *Map[K, V] {
 	return m
 }
 
-// Puts a value to the map.
+// Puts key-value pair into the map.
 func (m *Map[K, V]) Put(key K, value V) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -77,6 +82,7 @@ func (m *Map[K, V]) Get(key K) (value V, ok bool) {
 	return item.value, true
 }
 
+// Checks whether key is present in the map.
 func (m *Map[K, V]) Has(key K) bool {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -107,7 +113,7 @@ func (m *Map[K, V]) Upsert(key K, cb func(exists bool, value V) V) {
 	m.addToBucket(itm)
 }
 
-// Updates existing item or inserts a new one using provided callback function.
+// Updates existing item using provided callback function.
 func (m *Map[K, V]) Update(key K, cb func(value V) V) bool {
 	m.mu.Lock()
 	defer m.mu.Unlock()
