@@ -3,7 +3,7 @@
 ## Description
 
 A package consiting of various utilities for developing
-services in Golang.
+applications in Golang.
 
 ## Packages
 
