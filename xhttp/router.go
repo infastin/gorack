@@ -74,13 +74,3 @@ func (r *Router) HandleFunc(pattern string, handler http.HandlerFunc) {
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r.mux.ServeHTTP(w, req)
 }
-
-// Adds NotFound middleware to the chain.
-func (r *Router) NotFound(handler http.HandlerFunc) {
-	r.middlewares = append(r.middlewares, NotFound(handler))
-}
-
-// Adds MethodNotAllowed middleware to the chain.
-func (r *Router) MethodNotAllowed(handler http.HandlerFunc) {
-	r.middlewares = append(r.middlewares, MethodNotAllowed(handler))
-}
