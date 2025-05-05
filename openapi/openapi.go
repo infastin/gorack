@@ -331,10 +331,14 @@ func (o *openAPIv3) MarshalYAML() (any, error) {
 }
 
 type AppendOptions struct {
-	BasePath   string
+	// API base path.
+	BasePath string
+	// BearerAuth format.
 	BearerAuth string
 }
 
+// Append allows to change existing OpenAPI spec
+// and append some parts to it.
 func Append(spec []byte, opts *AppendOptions) ([]byte, error) {
 	var document yaml.Node
 	if err := yaml.Unmarshal(spec, &document); err != nil {
