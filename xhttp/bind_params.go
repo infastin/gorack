@@ -109,7 +109,20 @@ func (d *paramsDecoder) decode() error {
 		d.fieldType = d.outputType.Field(i)
 		tag := parseStructTag(d.fieldType.Tag)
 
-		if _, ok := tag["inline"]; ok {
+		var values []string
+		if name, ok := tag["query"]; ok {
+			d.location = ParamLocationQuery
+			d.name = name
+			values = query[d.name]
+		} else if name, ok := tag["path"]; ok {
+			d.location = ParamLocationPath
+			d.name = name
+			values = []string{d.req.PathValue(d.name)}
+		} else if name, ok := tag["header"]; ok {
+			d.location = ParamLocationHeader
+			d.name = http.CanonicalHeaderKey(name)
+			values = d.req.Header[d.name]
+		} else if _, ok := tag["inline"]; ok || d.fieldType.Anonymous {
 			d.location = ParamLocationInline
 
 			rv := d.output.Field(i)
@@ -137,21 +150,6 @@ func (d *paramsDecoder) decode() error {
 			if err := inline.decode(); err != nil {
 				return err
 			}
-		}
-
-		var values []string
-		if name, ok := tag["query"]; ok {
-			d.location = ParamLocationQuery
-			d.name = name
-			values = query[d.name]
-		} else if name, ok := tag["path"]; ok {
-			d.location = ParamLocationPath
-			d.name = name
-			values = []string{d.req.PathValue(d.name)}
-		} else if name, ok := tag["header"]; ok {
-			d.location = ParamLocationHeader
-			d.name = http.CanonicalHeaderKey(name)
-			values = d.req.Header[d.name]
 		}
 
 		if len(values) != 0 {

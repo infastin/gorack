@@ -13,13 +13,19 @@ import (
 func ExampleBindParams() {
 	mux := http.NewServeMux()
 
-	type Inline struct {
+	type Anonymous struct {
 		A string `query:"a"`
 		B string `query:"b"`
 	}
 
+	type Inline struct {
+		C string `query:"c"`
+		D string `query:"d"`
+	}
+
 	type Params struct {
-		Inline      `inline:""`
+		Anonymous
+		Inline      Inline `inline:""`
 		Foo         int    `query:"foo"`
 		NullableFoo *int   `query:"nullable_foo"`
 		Bar         int    `header:"bar"`
@@ -42,6 +48,8 @@ func ExampleBindParams() {
 	query := url.Values{
 		"a":   []string{"I am A"},
 		"b":   []string{"Hello from B"},
+		"c":   []string{"Hello from C"},
+		"d":   []string{"I am D"},
 		"foo": []string{"42"},
 	}
 	uri.Path = "/params/qux"
@@ -64,5 +72,5 @@ func ExampleBindParams() {
 
 	fmt.Printf("%s\n", data)
 
-	// Output: {"A":"I am A","B":"Hello from B","Foo":42,"NullableFoo":null,"Bar":123,"Baz":"qux"}
+	// Output: {"A":"I am A","B":"Hello from B","Inline":{"C":"Hello from C","D":"I am D"},"Foo":42,"NullableFoo":null,"Bar":123,"Baz":"qux"}
 }
