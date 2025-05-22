@@ -11,12 +11,12 @@ func SendContext[T any](ctx context.Context, ch chan<- T, val T) (sent bool) {
 	}
 }
 
-func SendDrop[T any](ch chan<- T, val T) (dropped bool) {
+func SendDrop[T any](ch chan<- T, val T) (sent bool) {
 	select {
 	case ch <- val:
-		return false
-	default:
 		return true
+	default:
+		return false
 	}
 }
 
