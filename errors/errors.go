@@ -81,7 +81,7 @@ func Wrapf(err error, format string, args ...any) error {
 //	Pack(kind error, cause error, s string)
 //	Pack(kind error, cause error, format string, args ...any)
 //	Pack(kind error, s string)
-//	Pack(kind error, format string string, args ...any)
+//	Pack(kind error, format string, args ...any)
 func Pack(kind error, args ...any) error {
 	e := &Error{kind: kind, stackTrace: callers(3)}
 
