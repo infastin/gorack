@@ -62,6 +62,7 @@ func TestCRON(t *testing.T) {
 
 		{"0 22 * * 1-5", true},
 		{"23 0-20/2 * * *", true},
+		{"23 0-20/2,1,15,3-14 * * sun-sun", true},
 		{"5 4 * * sun", true},
 		{"0 0,12 1 */2 *", true},
 		{"0 0 1,15 * 3", true},
