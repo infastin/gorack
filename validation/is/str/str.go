@@ -43,7 +43,6 @@ var (
 var (
 	rxUUID    = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
 	rxDNSName = regexp.MustCompile(`^([a-zA-Z0-9_]{1}[a-zA-Z0-9_-]{0,62}){1}(\.[a-zA-Z0-9_]{1}[a-zA-Z0-9_-]{0,62})*[\._]?$`)
-	rxCRON    = regexp.MustCompile(`^(((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*)\s+){4,6})(((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*))|(@(annually|yearly|monthly|weekly|daily|midnight|hourly))|(@every\s+(\d+(ns|us|µs|ms|s|m|h))+))$`)
 )
 
 func LowerCase[T ~string](v T) error {
@@ -229,7 +228,7 @@ func Directory[T ~string](v T) error {
 }
 
 func CRON[T ~string](v T) error {
-	if !rxCRON.MatchString(string(v)) {
+	if err := cronValid(string(v)); err != nil {
 		return ErrCRON
 	}
 	return nil
