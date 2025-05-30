@@ -2,7 +2,7 @@ package validation
 
 import "time"
 
-var ErrNotInInvalid = NewRuleError("not_in_invalid", "must not be in list")
+var ErrNotInInvalid = NewRuleError("not_in_invalid", "must be a valid value")
 
 type notInRule[T comparable] struct {
 	elements []T

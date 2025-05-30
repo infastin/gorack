@@ -155,6 +155,20 @@ func (sv StringValidator[T]) BetweenEqual(a, b T) StringValidator[T] {
 	return sv
 }
 
+func (sv StringValidator[T]) Match(expr string) StringValidator[T] {
+	if sv.scope.Ok() {
+		sv.rules = append(sv.rules, Match[T](expr))
+	}
+	return sv
+}
+
+func (sv StringValidator[T]) NotMatch(expr string) StringValidator[T] {
+	if sv.scope.Ok() {
+		sv.rules = append(sv.rules, NotMatch[T](expr))
+	}
+	return sv
+}
+
 func (sv StringValidator[T]) With(fns ...func(s T) error) StringValidator[T] {
 	if sv.scope.Ok() {
 		sv.rules = slices.Grow(sv.rules, len(fns))
