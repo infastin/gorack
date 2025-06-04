@@ -7,8 +7,10 @@ import (
 )
 
 type hook struct {
-	onStart func(context.Context, context.CancelCauseFunc) error
-	onStop  func(context.Context) error
+	startCtx       context.Context
+	cancelStartCtx context.CancelFunc
+	onStart        func(context.Context, context.CancelCauseFunc) error
+	onStop         func(context.Context) error
 }
 
 type Hook struct {
