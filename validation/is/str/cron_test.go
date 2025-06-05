@@ -38,7 +38,8 @@ func TestCRON(t *testing.T) {
 		{"* * * * 12 *", true},
 		{"* * * * 13 *", false},
 		{"* * * * * 6", true},
-		{"* * * * * 7", false},
+		{"* * * * * 7", true},
+		{"* * * * * 8", false},
 
 		{"30 08 ? Jul Sun", true},
 		{"30 08 * Jul Sun", true},
