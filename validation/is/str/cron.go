@@ -110,13 +110,14 @@ func cronValidFields(fields []string) error {
 }
 
 func cronValidField(field string, min, max int, alt map[string]int) error {
-	value := field
 	for n := 1; field != ""; n++ {
+		var value string
 		pos := strings.IndexByte(field, ',')
 		if pos != -1 {
 			value = field[:pos]
 			field = field[pos+1:]
 		} else {
+			value = field
 			field = ""
 		}
 		if err := cronValidValue(value, min, max, alt); err != nil {

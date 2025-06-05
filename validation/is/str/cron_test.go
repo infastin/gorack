@@ -61,6 +61,9 @@ func TestCRON(t *testing.T) {
 		{"* * * * Mon-Sun", false},
 		{"* * * * Sun-Mon", true},
 
+		{"* * * Jun,Mars *", false},
+		{"* * 1-31,32 * *", false},
+
 		{"0 22 * * 1-5", true},
 		{"23 0-20/2 * * *", true},
 		{"23 0-20/2,1,15,3-14 * * sun-sun", true},
