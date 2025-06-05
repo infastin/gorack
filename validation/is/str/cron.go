@@ -101,7 +101,7 @@ func cronValidFields(fields []string) error {
 	}
 
 	if len(fields) == 5 {
-		if err := cronValidField(fields[4], 0, 6, cronWeekdayAlt); err != nil {
+		if err := cronValidField(fields[4], 0, 7, cronWeekdayAlt); err != nil {
 			return fmt.Errorf("invalid day of week field: %w", err)
 		}
 	}
