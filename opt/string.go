@@ -3,8 +3,6 @@ package opt
 import (
 	"database/sql"
 	"encoding/json"
-
-	"github.com/infastin/gorack/fastconv"
 )
 
 type NullString[T ~string] struct {
@@ -82,7 +80,7 @@ func (v NullString[T]) MarshalJSON() ([]byte, error) {
 	if !v.Valid {
 		return []byte(`null`), nil
 	}
-	return fastconv.Bytes(v.Value), nil
+	return []byte(v.Value), nil
 }
 
 func (v *NullString[T]) UnmarshalJSON(data []byte) error {
@@ -103,7 +101,7 @@ func (v NullString[T]) MarshalText() ([]byte, error) {
 	if !v.Valid {
 		return []byte{}, nil
 	}
-	return fastconv.Bytes(v.Value), nil
+	return []byte(v.Value), nil
 }
 
 func (v *NullString[T]) UnmarshalText(data []byte) error {
@@ -193,7 +191,7 @@ func (v ZeroString[T]) MarshalJSON() ([]byte, error) {
 	if !v.Valid {
 		return []byte(`null`), nil
 	}
-	return fastconv.Bytes(v.Value), nil
+	return []byte(v.Value), nil
 }
 
 func (v *ZeroString[T]) UnmarshalJSON(data []byte) error {
@@ -214,7 +212,7 @@ func (v ZeroString[T]) MarshalText() ([]byte, error) {
 	if !v.Valid {
 		return []byte{}, nil
 	}
-	return fastconv.Bytes(v.Value), nil
+	return []byte(v.Value), nil
 }
 
 func (v *ZeroString[T]) UnmarshalText(data []byte) error {
