@@ -14,6 +14,10 @@ type Uint interface {
 
 type Unsigned = Uint
 
+type Integer interface {
+	Int | Uint
+}
+
 type Float interface {
 	~float32 | ~float64
 }
@@ -23,7 +27,11 @@ type Complex interface {
 }
 
 type Number interface {
-	Int | Uint | Float | Complex
+	Int | Uint | Float
+}
+
+type Numeric interface {
+	Number | Complex
 }
 
 type Ordered = cmp.Ordered
