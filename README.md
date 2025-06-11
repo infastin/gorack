@@ -22,6 +22,6 @@ applications in Golang.
 - [xalg](https://pkg.go.dev/github.com/infastin/gorack/xalg)
 - [xapp](https://pkg.go.dev/github.com/infastin/gorack/xapp)
 - [xchan](https://pkg.go.dev/github.com/infastin/gorack/xchan)
-- [xrest](https://pkg.go.dev/github.com/infastin/gorack/xrest)
+- [xhttp](https://pkg.go.dev/github.com/infastin/gorack/xhttp)
 - [xslices](https://pkg.go.dev/github.com/infastin/gorack/xslices)
 - [xtypes](https://pkg.go.dev/github.com/infastin/gorack/xtypes)
