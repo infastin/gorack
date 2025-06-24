@@ -8,15 +8,15 @@ import (
 	"github.com/infastin/gorack/shot"
 )
 
-type ManyExample struct {
+type FibMany struct {
 	values [2]int
 	idx    int
 	output chan int
 	state  shot.Many
 }
 
-func NewManyExample(ctx context.Context) *ManyExample {
-	return &ManyExample{
+func NewFibMany(ctx context.Context) *FibMany {
+	return &FibMany{
 		values: [2]int{-1, 1},
 		idx:    0,
 		output: make(chan int, 1),
@@ -24,14 +24,14 @@ func NewManyExample(ctx context.Context) *ManyExample {
 	}
 }
 
-func (e *ManyExample) Run() error {
+func (e *FibMany) Run() error {
 	stop, err := e.state.Start()
 	if err != nil {
 		return err
 	}
 	defer stop()
 
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(10 * time.Millisecond)
 	defer ticker.Stop()
 
 	for {
@@ -53,7 +53,7 @@ func (e *ManyExample) Run() error {
 	}
 }
 
-func (e *ManyExample) Close() error {
+func (e *FibMany) Close() error {
 	if err := e.state.Close(context.Background()); err != nil {
 		return err
 	}
@@ -61,30 +61,29 @@ func (e *ManyExample) Close() error {
 	return nil
 }
 
-func (e *ManyExample) Output() <-chan int {
+func (e *FibMany) Output() <-chan int {
 	return e.output
 }
 
-func (e *ManyExample) Done() <-chan struct{} {
+func (e *FibMany) Done() <-chan struct{} {
 	return e.state.Done()
 }
 
 func ExampleMany() {
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	many := NewManyExample(ctx)
-	defer many.Close()
-
-	go many.Run()
+	fib := NewFibMany(ctx)
+	go fib.Run()
+	defer fib.Close()
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case <-many.Done():
-			go many.Run()
-		case msg := <-many.Output():
+		case <-fib.Done():
+			go fib.Run()
+		case msg := <-fib.Output():
 			fmt.Print(msg, " ")
 		}
 	}

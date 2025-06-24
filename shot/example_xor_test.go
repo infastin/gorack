@@ -8,26 +8,26 @@ import (
 	"github.com/infastin/gorack/shot"
 )
 
-type XorExample struct {
+type FibXor struct {
 	output chan int
 	state  shot.Xor
 }
 
-func NewXorExample(ctx context.Context) *XorExample {
-	return &XorExample{
+func NewFibXor(ctx context.Context) *FibXor {
+	return &FibXor{
 		output: make(chan int, 1),
 		state:  shot.NewXor(ctx),
 	}
 }
 
-func (e *XorExample) Run(values [2]int, idx int) error {
+func (e *FibXor) Run(values [2]int, idx int) error {
 	stop, err := e.state.Start(context.Background())
 	if err != nil {
 		return err
 	}
 	defer stop()
 
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(10 * time.Millisecond)
 	defer ticker.Stop()
 
 	for {
@@ -46,7 +46,7 @@ func (e *XorExample) Run(values [2]int, idx int) error {
 	}
 }
 
-func (e *XorExample) Close() error {
+func (e *FibXor) Close() error {
 	if err := e.state.Close(context.Background()); err != nil {
 		return err
 	}
@@ -54,29 +54,28 @@ func (e *XorExample) Close() error {
 	return nil
 }
 
-func (e *XorExample) Output() <-chan int {
+func (e *FibXor) Output() <-chan int {
 	return e.output
 }
 
 func ExampleXor() {
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	xor := NewXorExample(ctx)
-	defer xor.Close()
-
-	go xor.Run([2]int{-1, 1}, 0)
+	fib := NewFibXor(ctx)
+	go fib.Run([2]int{-1, 1}, 0)
+	defer fib.Close()
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case msg := <-xor.Output():
+		case msg := <-fib.Output():
 			if msg == 13 {
-				go xor.Run([2]int{13, 21}, 0)
+				go fib.Run([2]int{13, 21}, 0)
 			}
 			if msg == 89 {
-				go xor.Run([2]int{89, 144}, 0)
+				go fib.Run([2]int{89, 144}, 0)
 			}
 			fmt.Print(msg, " ")
 		}

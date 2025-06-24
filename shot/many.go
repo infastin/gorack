@@ -5,38 +5,40 @@ import (
 	"sync"
 )
 
-// Allows to control the lifecycle of a resource
+// Many allows to control the lifecycle of a resource
 // so the resource can have only one instance running.
 type Many struct {
-	mu     sync.RWMutex
-	done   chan struct{}
-	state  State
-	ctx    context.Context
-	cancel context.CancelFunc
+	done      chan struct{}
+	state     State
+	ctx       context.Context
+	cancel    context.CancelFunc
+	mu        sync.RWMutex
+	parentCtx context.Context
 }
 
-// Creates Many with the given parent Context.
-func NewMany(ctx context.Context) Many {
-	ctx, cancel := context.WithCancel(ctx)
+// NewMany creates Many with the given parent context.
+func NewMany(parent context.Context) Many {
+	ctx, cancel := context.WithCancel(parent)
 	return Many{
-		mu:     sync.RWMutex{},
-		done:   make(chan struct{}),
-		state:  StateCreated,
-		ctx:    ctx,
-		cancel: cancel,
+		done:      make(chan struct{}),
+		state:     StateCreated,
+		ctx:       ctx,
+		cancel:    cancel,
+		mu:        sync.RWMutex{},
+		parentCtx: parent,
 	}
 }
 
-// Puts the resource in the Running state
+// Start puts the resource in the Running state
 // and returns stop function that is used
-// to signal that resource has exited.
+// to signal that the resource has exited.
 //
 // If resource hasn't been closed, calling the returned stop function
 // will put the resource in the Stopped state, which allows for the resource
 // to be started again with Start method.
 //
-// The returned stop function must be called for the
-// channel returned from Done method to become closed.
+// The returned stop function must be called
+// for the resource to properly exit.
 //
 // Returns an error if the resource has been closed or currently running.
 func (m *Many) Start() (stop func(), err error) {
@@ -49,46 +51,40 @@ func (m *Many) Start() (stop func(), err error) {
 	case StateClosed:
 		return nil, ErrClosed
 	case StateStopped:
+		m.ctx, m.cancel = context.WithCancel(m.parentCtx)
 		m.done = make(chan struct{})
 	}
 
 	m.state = StateRunning
 
-	return func() {
-		m.mu.Lock()
-		if m.ctx.Err() != nil {
-			m.state = StateClosed
-		} else {
-			m.state = StateStopped
-		}
-		close(m.done)
-		m.mu.Unlock()
-	}, nil
+	return m.onExit, nil
 }
 
-// Transitions the resource into the Closed state,
-// cancels Context returned from Context method
-// and prevents resource from being started at all.
+func (m *Many) onExit() {
+	m.mu.Lock()
+	if m.ctx.Err() != nil {
+		m.state = StateClosed
+	} else {
+		m.state = StateStopped
+		m.cancel()
+	}
+	close(m.done)
+	m.mu.Unlock()
+}
+
+// Close transitions the resource into the Closed state,
+// cancels the context returned from Context method
+// and prevents the resource from being started at all.
 //
-// If resource is in the Running state, waits for resource to call stop function
-// returned from Start method (i.e. waits for resource to exit).
+// If the resource is in the Running state, waits for the resource to exit.
 //
 // Context passed to this method can be canceled to pass control back to the caller
-// if resource takes too much time to exit. Canceling Context passed to this method
-// doesn't affect the resource in any way.
+// if the resource takes too much time to exit.
+// Canceling the context passed to this method doesn't affect the resource in any way.
 func (m *Many) Close(ctx context.Context) error {
-	m.mu.Lock()
-	switch m.state {
-	case StateCreated:
-		m.state = StateClosed
-		close(m.done)
-	case StateStopped:
-		m.state = StateClosed
-		// done is already closed here
+	if m.close() {
+		return nil
 	}
-	m.mu.Unlock()
-
-	m.cancel()
 
 	select {
 	case <-ctx.Done():
@@ -99,26 +95,48 @@ func (m *Many) Close(ctx context.Context) error {
 	return nil
 }
 
-// Returns Context of the resource.
+func (m *Many) close() bool {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	switch m.state {
+	case StateCreated:
+		m.state = StateClosed
+		m.cancel()
+		close(m.done)
+		return true
+	case StateStopped:
+		m.state = StateClosed
+		m.cancel()
+		return true
+	case StateClosed:
+		return true
+	}
+
+	m.cancel()
+	return false
+}
+
+// Context returns the context of the resource.
 //
-// Context will be closed when resource is closed
-// or resource has exited.
+// Context is cancelled when the resource exits,
+// is closed by Close method, or when the parent context is cancelled.
 //
-// Resource must use Context returned from this method to detect
-// when closing the resource was requested with Close method.
+// Resource must use the context returned from this method
+// to exit when the context has been cancelled.
 func (m *Many) Context() context.Context {
 	return m.ctx
 }
 
-// Returns the channel that will be closed
-// when resource is closed or resource has exited.
+// Done returns the channel that is closed
+// when the resource exits or is closed.
 func (m *Many) Done() <-chan struct{} {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	return m.done
 }
 
-// Returns current state of the resource.
+// State returns current state of the resource.
 func (m *Many) State() State {
 	m.mu.RLock()
 	defer m.mu.RUnlock()

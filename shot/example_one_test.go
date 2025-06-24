@@ -8,26 +8,26 @@ import (
 	"github.com/infastin/gorack/shot"
 )
 
-type OneExample struct {
+type FibOne struct {
 	output chan int
 	state  shot.One
 }
 
-func NewOneExample(ctx context.Context) *OneExample {
-	return &OneExample{
+func NewFibOne(ctx context.Context) *FibOne {
+	return &FibOne{
 		output: make(chan int, 1),
 		state:  shot.NewOne(ctx),
 	}
 }
 
-func (e *OneExample) Run() error {
+func (e *FibOne) Run() error {
 	stop, err := e.state.Start()
 	if err != nil {
 		return err
 	}
 	defer stop()
 
-	ticker := time.NewTicker(time.Second)
+	ticker := time.NewTicker(10 * time.Millisecond)
 	defer ticker.Stop()
 
 	values := [2]int{-1, 1}
@@ -49,31 +49,30 @@ func (e *OneExample) Run() error {
 	}
 }
 
-func (e *OneExample) Close() error {
+func (e *FibOne) Close() error {
 	if err := e.state.Close(context.Background()); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (e *OneExample) Output() <-chan int {
+func (e *FibOne) Output() <-chan int {
 	return e.output
 }
 
 func ExampleOne() {
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	one := NewOneExample(ctx)
-	defer one.Close()
-
-	go one.Run()
+	fib := NewFibOne(ctx)
+	go fib.Run()
+	defer fib.Close()
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case msg := <-one.Output():
+		case msg := <-fib.Output():
 			fmt.Print(msg, " ")
 		}
 	}
