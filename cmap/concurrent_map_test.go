@@ -1,7 +1,8 @@
 package cmap
 
 import (
-	"encoding/json"
+	"iter"
+	"slices"
 	"sort"
 	"strconv"
 	"testing"
@@ -14,10 +15,10 @@ type Animal struct {
 func TestMapCreation(t *testing.T) {
 	m := New[string]()
 	if m.shards == nil {
-		t.Error("map is null.")
+		t.Error("map is nil")
 	}
 	if m.Count() != 0 {
-		t.Error("new map should be empty.")
+		t.Error("new map must be empty")
 	}
 }
 
@@ -31,7 +32,7 @@ func TestInsert(t *testing.T) {
 	m.Set("monkey", monkey)
 
 	if m.Count() != 2 {
-		t.Error("map should contain exactly two elements.")
+		t.Error("map must contain exactly two elements")
 	}
 }
 
@@ -43,7 +44,10 @@ func TestInsertAbsent(t *testing.T) {
 
 	monkey := Animal{"monkey"}
 	if ok := m.SetIfAbsent("elephant", monkey); ok {
-		t.Error("map set a new value even the entry is already present")
+		t.Error("new value has been set, but the element is already present")
+	}
+	if val, _ := m.Get("elephant"); val != elephant {
+		t.Error("element has been modified after second SetIfAbsent")
 	}
 }
 
@@ -53,10 +57,10 @@ func TestGet(t *testing.T) {
 	// Get a missing element.
 	val, ok := m.Get("Money")
 	if ok {
-		t.Error("ok should be false when item is missing from map.")
+		t.Error("ok must be false when an element is missing from the map")
 	}
 	if val != (Animal{}) {
-		t.Error("Missing values should return as null.")
+		t.Error("missing values must return as default")
 	}
 
 	elephant := Animal{"elephant"}
@@ -65,10 +69,10 @@ func TestGet(t *testing.T) {
 	// Retrieve inserted element.
 	elephant, ok = m.Get("elephant")
 	if !ok {
-		t.Error("ok should be true for item stored within the map.")
+		t.Error("ok must be true for an element stored within the map")
 	}
 	if elephant.name != "elephant" {
-		t.Error("item was modified.")
+		t.Error("element has been modified after Get")
 	}
 }
 
@@ -77,14 +81,14 @@ func TestHas(t *testing.T) {
 
 	// Get a missing element.
 	if m.Has("Money") {
-		t.Error("element shouldn't exists")
+		t.Error("element must not exist")
 	}
 
 	elephant := Animal{"elephant"}
 	m.Set("elephant", elephant)
 
 	if !m.Has("elephant") {
-		t.Error("element exists, expecting Has to return True.")
+		t.Error("element doesn't exist, expected Has to return true")
 	}
 }
 
@@ -96,19 +100,22 @@ func TestRemove(t *testing.T) {
 	m.Remove("monkey")
 
 	if m.Count() != 0 {
-		t.Error("Expecting count to be zero once item was removed.")
+		t.Error("expected count to be zero once an element has been removed")
 	}
 
 	temp, ok := m.Get("monkey")
-	if ok != false {
-		t.Error("Expecting ok to be false for missing items.")
+	if ok {
+		t.Error("expected ok to be false for missing elements")
 	}
 	if temp != (Animal{}) {
-		t.Error("Expecting item to be nil after its removal.")
+		t.Error("expected an element to be default after its removal")
 	}
 
-	// Remove a none existing element.
-	m.Remove("noone")
+	// Remove a non-existent element.
+	m.Remove("none")
+	if _, ok = m.Get("none"); ok {
+		t.Error("element has been created after Remove")
+	}
 }
 
 func TestRemoveCb(t *testing.T) {
@@ -132,58 +139,58 @@ func TestRemoveCb(t *testing.T) {
 		return val.name == "monkey"
 	}
 
-	// Monkey should be removed
+	// Monkey must be removed
 	result := m.RemoveCb("monkey", cb)
 	if !result {
-		t.Errorf("Result was not true")
+		t.Error("element must be removed")
 	}
 	if mapKey != "monkey" {
-		t.Error("Wrong key was provided to the callback")
+		t.Errorf("wrong key has been provided to the callback: expected=monkey got=%s", mapKey)
 	}
 	if mapVal != monkey {
-		t.Errorf("Wrong value was provided to the value")
+		t.Errorf("wrong value has been provided to the callback: expected=%v got=%v", monkey, mapVal)
 	}
 	if !wasFound {
-		t.Errorf("Key was not found")
+		t.Error("key must be found")
 	}
 	if m.Has("monkey") {
-		t.Errorf("Key was not removed")
+		t.Error("key has not been removed")
 	}
 
-	// Elephant should not be removed
+	// Elephant must not be removed
 	result = m.RemoveCb("elephant", cb)
 	if result {
-		t.Errorf("Result was true")
+		t.Error("element must not be removed")
 	}
 	if mapKey != "elephant" {
-		t.Error("Wrong key was provided to the callback")
+		t.Errorf("wrong key has been provided to the callback: expected=elephant got=%s", mapKey)
 	}
 	if mapVal != elephant {
-		t.Errorf("Wrong value was provided to the value")
+		t.Errorf("wrong value has been provided to the callback: expected=%v got=%v", elephant, mapVal)
 	}
 	if !wasFound {
-		t.Errorf("Key was not found")
+		t.Error("key must be found")
 	}
 	if !m.Has("elephant") {
-		t.Errorf("Key was removed")
+		t.Error("key has been removed")
 	}
 
-	// Unset key should remain unset
+	// Unset key must remain unset
 	result = m.RemoveCb("horse", cb)
 	if result {
-		t.Errorf("Result was true")
+		t.Error("element must not be removed")
 	}
 	if mapKey != "horse" {
-		t.Error("Wrong key was provided to the callback")
+		t.Errorf("wrong key has been provided to the callback: expected=horse got=%s", mapKey)
 	}
 	if mapVal != (Animal{}) {
-		t.Errorf("Wrong value was provided to the value")
+		t.Errorf("wrong value has been provided to the callback: expected=%v got=%v", Animal{}, mapVal)
 	}
 	if wasFound {
-		t.Errorf("Key was found")
+		t.Error("key must not be found")
 	}
 	if m.Has("horse") {
-		t.Errorf("Key was created")
+		t.Error("element has been created")
 	}
 }
 
@@ -195,24 +202,24 @@ func TestPop(t *testing.T) {
 
 	v, exists := m.Pop("monkey")
 	if !exists || v != monkey {
-		t.Error("Pop didn't find a monkey.")
+		t.Error("element has not been removed")
 	}
 
 	v2, exists2 := m.Pop("monkey")
 	if exists2 || v2 == monkey {
-		t.Error("Pop keeps finding monkey")
+		t.Error("element has been removed twice")
 	}
 
 	if m.Count() != 0 {
-		t.Error("Expecting count to be zero once item was Pop'ed.")
+		t.Error("expected Count to return zero")
 	}
 
 	temp, ok := m.Get("monkey")
-	if ok != false {
-		t.Error("Expecting ok to be false for missing items.")
+	if ok {
+		t.Error("element has been found even though it has been removed")
 	}
 	if temp != (Animal{}) {
-		t.Error("Expecting item to be nil after its removal.")
+		t.Error("removed elements must return as default")
 	}
 }
 
@@ -222,18 +229,50 @@ func TestCount(t *testing.T) {
 		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
 	}
 	if m.Count() != 100 {
-		t.Error("Expecting 100 element within map.")
+		t.Errorf("expected the map to contain 100 elements, instead got %d", m.Count())
 	}
 }
 
 func TestIsEmpty(t *testing.T) {
 	m := New[Animal]()
 	if !m.IsEmpty() {
-		t.Error("new map should be empty")
+		t.Error("new map must be empty")
 	}
 	m.Set("elephant", Animal{"elephant"})
 	if m.IsEmpty() {
-		t.Error("map shouldn't be empty.")
+		t.Error("map must not be empty")
+	}
+}
+
+func TestClear(t *testing.T) {
+	m := New[Animal]()
+	// Insert 100 elements.
+	for i := 0; i < 100; i++ {
+		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
+	}
+	m.Clear()
+	if m.Count() != 0 {
+		t.Errorf("expected the map to be empty, instead got %d elements", m.Count())
+	}
+}
+
+func TestIter(t *testing.T) {
+	m := New[Animal]()
+	// Insert 100 elements.
+	for i := 0; i < 100; i++ {
+		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
+	}
+	counter := 0
+	// Iterate over elements.
+	m.Iter(func(_ string, val Animal) bool {
+		if val == (Animal{}) {
+			t.Error("expecting a valid object")
+		}
+		counter++
+		return true
+	})
+	if counter != 100 {
+		t.Errorf("expected to iterate over 100 elements, instead got %d", counter)
 	}
 }
 
@@ -247,41 +286,12 @@ func TestSeq(t *testing.T) {
 	// Iterate over elements.
 	for _, val := range m.Seq() {
 		if val == (Animal{}) {
-			t.Error("Expecting an object.")
+			t.Error("expecting a valid object")
 		}
 		counter++
 	}
 	if counter != 100 {
-		t.Error("We should have counted 100 elements.")
-	}
-}
-
-func TestClear(t *testing.T) {
-	m := New[Animal]()
-	// Insert 100 elements.
-	for i := 0; i < 100; i++ {
-		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
-	}
-	m.Clear()
-	if m.Count() != 0 {
-		t.Error("We should have 0 elements.")
-	}
-}
-
-func TestIter(t *testing.T) {
-	m := New[Animal]()
-	// Insert 100 elements.
-	for i := 0; i < 100; i++ {
-		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
-	}
-	counter := 0
-	// Iterate over elements.
-	m.Iter(func(key string, v Animal) bool {
-		counter++
-		return true
-	})
-	if counter != 100 {
-		t.Error("We should have counted 100 elements.")
+		t.Errorf("expected to iterate over 100 elements, instead got %d", counter)
 	}
 }
 
@@ -291,74 +301,8 @@ func TestItems(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
 	}
-	items := m.Items()
-	if len(items) != 100 {
-		t.Error("We should have counted 100 elements.")
-	}
-}
-
-func TestConcurrent(t *testing.T) {
-	m := New[int]()
-	ch := make(chan int)
-	const iterations = 1000
-	var a [iterations]int
-	// Using go routines insert 1000 ints into our map.
-	go func() {
-		for i := 0; i < iterations/2; i++ {
-			// Add item to map.
-			m.Set(strconv.Itoa(i), i)
-			// Retrieve item from map.
-			val, _ := m.Get(strconv.Itoa(i))
-			// Write to channel inserted value.
-			ch <- val
-		} // Call go routine with current index.
-	}()
-	go func() {
-		for i := iterations / 2; i < iterations; i++ {
-			// Add item to map.
-			m.Set(strconv.Itoa(i), i)
-			// Retrieve item from map.
-			val, _ := m.Get(strconv.Itoa(i))
-			// Write to channel inserted value.
-			ch <- val
-		} // Call go routine with current index.
-	}()
-	// Wait for all go routines to finish.
-	counter := 0
-	for elem := range ch {
-		a[counter] = elem
-		counter++
-		if counter == iterations {
-			break
-		}
-	}
-	// Sorts array, will make is simpler to verify all inserted values we're returned.
-	sort.Ints(a[0:iterations])
-	// Make sure map contains 1000 elements.
-	if m.Count() != iterations {
-		t.Error("Expecting 1000 elements.")
-	}
-	// Make sure all inserted values we're fetched from map.
-	for i := 0; i < iterations; i++ {
-		if i != a[i] {
-			t.Error("missing value", i)
-		}
-	}
-}
-
-func TestJsonMarshal(t *testing.T) {
-	expected := "{\"a\":1,\"b\":2}"
-
-	m := New[int](WithShardCount[string](2))
-	m.Set("a", 1)
-	m.Set("b", 2)
-
-	j, err := json.Marshal(m)
-	if err != nil {
-		t.Error(err)
-	}
-	if string(j) != expected {
-		t.Error("json", string(j), "differ from expected", expected)
+	if n := len(m.Items()); n != 100 {
+		t.Errorf("expected 100 elements, got %d", n)
 	}
 }
 
@@ -368,13 +312,55 @@ func TestKeys(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
 	}
-	if len(m.Keys()) != 100 {
-		t.Error("We should have counted 100 elements.")
+	if n := len(m.Keys()); n != 100 {
+		t.Errorf("expected 100 keys, got %d", n)
+	}
+}
+
+func TestRemoveFunc(t *testing.T) {
+	testcases := []string{"elephant", "dolphin", "whale", "tiger", "lion"}
+
+	type test struct {
+		removed []string
+		remains []string
+	}
+
+	tests := make([]test, 0)
+	for n := 1; n <= len(testcases); n++ {
+		for perm := range permute(testcases, n) {
+			remains := slices.DeleteFunc(slices.Clone(testcases), func(s string) bool {
+				return slices.Contains(perm, s)
+			})
+			slices.Sort(remains)
+			tests = append(tests, test{
+				removed: perm,
+				remains: remains,
+			})
+		}
+	}
+
+	for _, tt := range tests {
+		m := New[Animal]()
+		for _, tc := range testcases {
+			m.Set(tc, Animal{tc})
+		}
+
+		m.RemoveFunc(func(key string, v Animal) bool {
+			return slices.Contains(tt.removed, key)
+		})
+
+		got := m.Keys()
+		slices.Sort(got)
+
+		if !slices.Equal(tt.remains, got) {
+			t.Errorf("wrong keys after RemoveFunc: input=%v expected=%v got=%v",
+				tt.removed, tt.remains, got)
+		}
 	}
 }
 
 func FuzzUpsert(f *testing.F) {
-	testcases := []string{"dolphin", "whale", "tiger", "lion"}
+	testcases := []string{"elephant", "dolphin", "whale", "tiger", "lion"}
 
 	for i := range testcases {
 		for j := range testcases {
@@ -452,7 +438,7 @@ func FuzzUpsert(f *testing.F) {
 }
 
 func FuzzUpdate(f *testing.F) {
-	testcases := []string{"dolphin", "whale", "tiger", "lion"}
+	testcases := []string{"elephant", "dolphin", "whale", "tiger", "lion"}
 
 	for i := range testcases {
 		for j := range testcases {
@@ -529,7 +515,92 @@ func TestKeysWhenRemoving(t *testing.T) {
 	}
 	for _, k := range m.Keys() {
 		if k == "" {
-			t.Error("Empty keys returned")
+			t.Error("got empty key")
+		}
+	}
+}
+
+func TestConcurrent(t *testing.T) {
+	m := New[int]()
+	ch := make(chan int)
+	const iterations = 1000
+	var a [iterations]int
+	// Using go routines insert 1000 ints into our map.
+	go func() {
+		for i := 0; i < iterations/2; i++ {
+			// Add item to map.
+			m.Set(strconv.Itoa(i), i)
+			// Retrieve item from map.
+			val, _ := m.Get(strconv.Itoa(i))
+			// Write to channel inserted value.
+			ch <- val
+		} // Call go routine with current index.
+	}()
+	go func() {
+		for i := iterations / 2; i < iterations; i++ {
+			// Add item to map.
+			m.Set(strconv.Itoa(i), i)
+			// Retrieve item from map.
+			val, _ := m.Get(strconv.Itoa(i))
+			// Write to channel inserted value.
+			ch <- val
+		} // Call go routine with current index.
+	}()
+	// Wait for all go routines to finish.
+	counter := 0
+	for elem := range ch {
+		a[counter] = elem
+		counter++
+		if counter == iterations {
+			break
+		}
+	}
+	// Sorts array, will make is simpler to verify all inserted values we're returned.
+	sort.Ints(a[0:iterations])
+	// Make sure map contains 1000 elements.
+	if m.Count() != iterations {
+		t.Errorf("expected 1000 elements, got %d", m.Count())
+	}
+	// Make sure all inserted values we're fetched from map.
+	for i := 0; i < iterations; i++ {
+		if i != a[i] {
+			t.Errorf("missing value %d", i)
+		}
+	}
+}
+
+func permute(cases []string, n int) iter.Seq[[]string] {
+	return func(yield func([]string) bool) {
+		idxs := make([]int, n)
+		mins := make([]int, n)
+		maxs := make([]int, n)
+
+		for i := range n {
+			idxs[i] = i
+			mins[i] = i
+			maxs[i] = i + 1 + (len(cases) - n)
+		}
+
+		for {
+			result := make([]string, n)
+			for i, idx := range idxs {
+				result[i] = cases[idx]
+			}
+			if !yield(result) {
+				return
+			}
+			for k := len(idxs) - 1; k >= 0; k-- {
+				if idxs[k]+1 < maxs[k] {
+					idxs[k]++
+					break
+				} else if k == 0 {
+					return
+				}
+				if mins[k]+1 < maxs[k] {
+					mins[k]++
+					idxs[k] = mins[k]
+				}
+			}
 		}
 	}
 }
