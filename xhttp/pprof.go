@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// Returns http handler that provides /pprof routes.
+// ProfilerHandler returns http handler that provides /pprof routes.
 func ProfilerHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -39,7 +39,7 @@ func ProfilerHandler() http.Handler {
 	})
 }
 
-// Adds the given prefix to the profiler handler
+// Profiler adds the given prefix to the profiler handler
 // and returns pattern and http handler for (*http.ServeMux).Handle-like methods.
 func Profiler(prefix string) (string, http.Handler) {
 	return Prefix(prefix, ProfilerHandler())

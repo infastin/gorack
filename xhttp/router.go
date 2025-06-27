@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// Simple wrapper around http.ServerMux that introduces
+// Router is simple wrapper around http.ServerMux that introduces
 // additional convenient methods.
 type Router struct {
 	mux         *http.ServeMux
@@ -14,7 +14,7 @@ type Router struct {
 	middlewares []Middleware
 }
 
-// Creates a new Router.
+// NewRouter creates a new Router.
 func NewRouter() *Router {
 	return &Router{
 		mux:         http.NewServeMux(),
@@ -24,7 +24,7 @@ func NewRouter() *Router {
 	}
 }
 
-// Creates a new router group with prefix.
+// Group creates a new router group with prefix.
 func (r *Router) Group(prefix string, fn func(group *Router)) {
 	prefix, strip := muxPrefix(prefix)
 	g := &Router{
@@ -36,7 +36,12 @@ func (r *Router) Group(prefix string, fn func(group *Router)) {
 	fn(g)
 }
 
-// Adds middlewares to the chain.
+// Mount attaches handler as a subrouter with prefix.
+func (r *Router) Mount(prefix string, handler http.Handler) {
+	r.Handle(Prefix(prefix, handler))
+}
+
+// Use adds middlewares to the chain.
 func (r *Router) Use(middlewares ...Middleware) {
 	if len(middlewares) == 0 {
 		return
@@ -44,12 +49,12 @@ func (r *Router) Use(middlewares ...Middleware) {
 	r.middlewares = append(r.middlewares, middlewares...)
 }
 
-// Registers the handler for the given pattern.
+// Handle registers the handler for the given pattern.
 func (r *Router) Handle(pattern string, handler http.Handler) {
 	if r.prefix != "" {
 		slashIdx := strings.IndexByte(pattern, '/')
 		if slashIdx == -1 {
-			panic("xrest: invalid pattern")
+			panic("xhttp: invalid pattern")
 		}
 		// [METHOD ][HOST]<PREFIX>[/PATH]
 		pattern = pattern[:slashIdx] + routePathJoin(r.prefix, pattern[slashIdx:])
@@ -65,12 +70,12 @@ func (r *Router) Handle(pattern string, handler http.Handler) {
 	}
 }
 
-// Registers the handler function for the given pattern.
+// HandleFunc registers the handler function for the given pattern.
 func (r *Router) HandleFunc(pattern string, handler http.HandlerFunc) {
 	r.Handle(pattern, handler)
 }
 
-// Implements http.Handler interface, which serves HTTP requests.
+// ServeHTTP implements http.Handler interface, which serves HTTP requests.
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	r.mux.ServeHTTP(w, req)
 }

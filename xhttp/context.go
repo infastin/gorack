@@ -29,7 +29,7 @@ func (c *dataCtx) Value(key any) any {
 	return c.Context.Value(key)
 }
 
-// Middleware that provides a custom context that
+// Context is a middleware that provides a custom context that
 // can be used to set and get values and errors
 // inside handlers and other middlewares.
 func Context() Middleware {
@@ -46,7 +46,7 @@ func Context() Middleware {
 	}
 }
 
-// Puts key-value pair in the context provided by Context middleware.
+// Set puts key-value pair in the context provided by Context middleware.
 // NOTE: use Get to retrieve the value, using (context.Context).Value won't work.
 func Set[T any](r *http.Request, key string, value T) {
 	data, ok := r.Context().Value(contextKey{}).(*contextData)
@@ -56,7 +56,7 @@ func Set[T any](r *http.Request, key string, value T) {
 	data.values[key] = value
 }
 
-// Looks up a key from the context provided by Context middleware.
+// Get looks up a key from the context provided by Context middleware.
 func Get[T any](r *http.Request, key string) (val T, ok bool) {
 	data, ok := r.Context().Value(contextKey{}).(*contextData)
 	if !ok {
@@ -72,7 +72,7 @@ func Get[T any](r *http.Request, key string) (val T, ok bool) {
 	return val, ok
 }
 
-// Returns an error saved in the context provided by Context middleware.
+// GetError returns an error saved in the context provided by Context middleware.
 func GetError(r *http.Request) error {
 	data, ok := r.Context().Value(contextKey{}).(*contextData)
 	if !ok {
@@ -81,7 +81,7 @@ func GetError(r *http.Request) error {
 	return data.err
 }
 
-// Saves an error in the context provided by Context middleware.
+// Error saves an error in the context provided by Context middleware.
 func Error(r *http.Request, err error) {
 	data, ok := r.Context().Value(contextKey{}).(*contextData)
 	if !ok {

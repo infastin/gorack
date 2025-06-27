@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// Middleware that will cancel request's context after the specified duration.
+// Timeout is a middleware that will cancel request's context after the specified duration.
 func Timeout(timeout time.Duration) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -18,7 +18,7 @@ func Timeout(timeout time.Duration) Middleware {
 	}
 }
 
-// Middleware that will cancel request's context with the given cause
+// TimeoutCause is a middleware that will cancel request's context with the given cause
 // after the specified duration
 func TimeoutCause(timeout time.Duration, cause error) Middleware {
 	return func(next http.Handler) http.Handler {

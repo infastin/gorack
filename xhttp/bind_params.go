@@ -70,8 +70,8 @@ func (e *BindParamsValueError) Unwrap() error {
 	return e.Err
 }
 
-// Decodes request parameters (query, header, path) into a structure
-// using structure tags.
+// BindParams decodes request parameters (query, header, path)
+// into a struct using struct tags.
 func BindParams(r *http.Request, output any) error {
 	rv := reflect.ValueOf(output)
 	if rv.Kind() != reflect.Pointer || rv.IsNil() {

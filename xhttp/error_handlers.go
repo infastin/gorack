@@ -30,7 +30,7 @@ func (w *statusCatcher) Write(data []byte) (int, error) {
 	return w.ResponseWriter.Write(data)
 }
 
-// Middleware that allows to catch http.StatusNotFound codes
+// NotFound is a middleware that allows to catch http.StatusNotFound codes
 // written to http.ResponseWriter and handle them.
 func NotFound(handler http.HandlerFunc) Middleware {
 	return func(next http.Handler) http.Handler {
@@ -48,7 +48,7 @@ func NotFound(handler http.HandlerFunc) Middleware {
 	}
 }
 
-// Middleware that allows to catch http.StatusMethodNotAllowed codes
+// MethodNotAllowed is a middleware that allows to catch http.StatusMethodNotAllowed codes
 // written to http.ResponseWriter and handle them.
 func MethodNotAllowed(handler http.HandlerFunc) Middleware {
 	return func(next http.Handler) http.Handler {
@@ -62,6 +62,23 @@ func MethodNotAllowed(handler http.HandlerFunc) Middleware {
 				didHandle:      false,
 			}
 			next.ServeHTTP(scw, r)
+		})
+	}
+}
+
+// RemoveErrorHandlers is a middleware that removes wrappers around the original ResponseWriter
+// that were added by NotFound and MethodNotAllowed middlewares.
+func RemoveErrorHandlers(handler http.HandlerFunc) Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			for {
+				scw, ok := w.(*statusCatcher)
+				if !ok {
+					break
+				}
+				w = scw.ResponseWriter
+			}
+			next.ServeHTTP(w, r)
 		})
 	}
 }

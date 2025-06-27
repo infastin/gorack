@@ -20,7 +20,7 @@ var docsTemplateSrc string
 
 var docsTemplate = template.Must(template.New("").Parse(docsTemplateSrc))
 
-// Returns http handler that provides OpenAPI specification page.
+// DocumentationHandler returns http handler that provides OpenAPI specification page.
 // Uses Stoplight Elements.
 func DocumentationHandler(name, basePath string, spec []byte) http.Handler {
 	var index bytes.Buffer
@@ -50,7 +50,7 @@ func DocumentationHandler(name, basePath string, spec []byte) http.Handler {
 	})
 }
 
-// Adds the given prefix to the documentation handler
+// Documentation adds the given prefix to the documentation handler
 // and returns pattern and http handler for (*http.ServeMux).Handle-like methods.
 func Documentation(name, basePath, prefix string, spec []byte) (string, http.Handler) {
 	handler := DocumentationHandler(name, path.Join(basePath, prefix), spec)

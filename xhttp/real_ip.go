@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// Extracts real ip from X-Forward-For and X-Real-IP headers.
+// RealIP extracts real ip from X-Forward-For and X-Real-IP headers.
 func RealIP(r *http.Request) net.IP {
 	ip := getIPFromXRealIP(r)
 	if ip != nil {
