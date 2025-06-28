@@ -156,7 +156,7 @@ func NewZeroInt[T constraints.Int](value T, valid bool) ZeroInt[T] {
 }
 
 func ZeroIntFrom[T constraints.Int](value T) ZeroInt[T] {
-	return NewZeroInt(value, true)
+	return NewZeroInt(value, value != 0)
 }
 
 func ZeroIntFromPtr[T constraints.Int](value *T) ZeroInt[T] {

@@ -131,7 +131,7 @@ func NewZeroTime(value time.Time, valid bool) ZeroTime {
 }
 
 func ZeroTimeFrom(value time.Time) ZeroTime {
-	return NewZeroTime(value, true)
+	return NewZeroTime(value, !value.IsZero())
 }
 
 func ZeroTimeFromPtr(value *time.Time) ZeroTime {

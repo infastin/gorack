@@ -129,7 +129,7 @@ func NewZeroString[T ~string](value T, valid bool) ZeroString[T] {
 }
 
 func ZeroStringFrom[T ~string](value T) ZeroString[T] {
-	return NewZeroString(value, true)
+	return NewZeroString(value, value != "")
 }
 
 func ZeroStringFromPtr[T ~string](value *T) ZeroString[T] {

@@ -114,7 +114,7 @@ func NewZero[T comparable](value T, valid bool) Zero[T] {
 
 func ZeroFrom[T comparable](value T) Zero[T] {
 	var zero T
-	return NewZero(value, value == zero)
+	return NewZero(value, value != zero)
 }
 
 func ZeroFromPtr[T comparable](value *T) Zero[T] {
