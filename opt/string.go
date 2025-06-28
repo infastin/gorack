@@ -80,7 +80,7 @@ func (v NullString[T]) MarshalJSON() ([]byte, error) {
 	if !v.Valid {
 		return []byte(`null`), nil
 	}
-	return []byte(v.Value), nil
+	return json.Marshal(v.Value)
 }
 
 func (v *NullString[T]) UnmarshalJSON(data []byte) error {
@@ -191,7 +191,7 @@ func (v ZeroString[T]) MarshalJSON() ([]byte, error) {
 	if !v.Valid {
 		return []byte(`null`), nil
 	}
-	return []byte(v.Value), nil
+	return json.Marshal(v.Value)
 }
 
 func (v *ZeroString[T]) UnmarshalJSON(data []byte) error {

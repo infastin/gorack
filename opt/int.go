@@ -102,7 +102,7 @@ func (v NullInt[T]) MarshalJSON() ([]byte, error) {
 	if !v.Valid {
 		return []byte(`null`), nil
 	}
-	return strconv.AppendInt(nil, int64(v.Value), 10), nil
+	return json.Marshal(v.Value)
 }
 
 func (v *NullInt[T]) UnmarshalJSON(data []byte) error {
@@ -236,7 +236,7 @@ func (v ZeroInt[T]) MarshalJSON() ([]byte, error) {
 	if !v.Valid {
 		return []byte(`null`), nil
 	}
-	return strconv.AppendInt(nil, int64(v.Value), 10), nil
+	return json.Marshal(v.Value)
 }
 
 func (v *ZeroInt[T]) UnmarshalJSON(data []byte) error {
