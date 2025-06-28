@@ -85,6 +85,7 @@ func (v NullTime) MarshalJSON() ([]byte, error) {
 
 func (v *NullTime) UnmarshalJSON(data []byte) error {
 	if len(data) > 0 && data[0] == 'n' {
+		v.Value = time.Time{}
 		v.Valid = false
 		return nil
 	}
@@ -198,6 +199,7 @@ func (v ZeroTime) MarshalJSON() ([]byte, error) {
 
 func (v *ZeroTime) UnmarshalJSON(data []byte) error {
 	if len(data) > 0 && data[0] == 'n' {
+		v.Value = time.Time{}
 		v.Valid = false
 		return nil
 	}

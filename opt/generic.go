@@ -88,6 +88,8 @@ func (v Null[T]) MarshalJSON() ([]byte, error) {
 
 func (v *Null[T]) UnmarshalJSON(data []byte) error {
 	if len(data) > 0 && data[0] == 'n' {
+		var zero T
+		v.Value = zero
 		v.Valid = false
 		return nil
 	}
@@ -185,6 +187,8 @@ func (v Zero[T]) MarshalJSON() ([]byte, error) {
 
 func (v *Zero[T]) UnmarshalJSON(data []byte) error {
 	if len(data) > 0 && data[0] == 'n' {
+		var zero T
+		v.Value = zero
 		v.Valid = false
 		return nil
 	}
