@@ -7,7 +7,12 @@ import (
 	"net/http"
 	"path"
 	"strings"
+	"unsafe"
 )
+
+func toBytes(s string) []byte {
+	return unsafe.Slice(unsafe.StringData(s), len(s))
+}
 
 func routePathJoin(elems ...string) string {
 	elems = append([]string{"/"}, elems...)

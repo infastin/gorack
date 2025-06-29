@@ -73,7 +73,7 @@ func Wrapf(err error, format string, args ...any) error {
 	return wErr
 }
 
-// Creates a new error with a given kind.
+// Pack creates a new error with a given kind.
 // List of valid function signatures:
 //
 //	Pack(kind error)
@@ -119,7 +119,7 @@ func (e *Error) Error() string {
 	return strings.Join(parts, ": ")
 }
 
-// Formats the stack of Frames according to the fmt.Formatter interface.
+// Format formats the stack of Frames according to the fmt.Formatter interface.
 //
 //	%s    prints Error as is
 //	%v    equivalent to %s

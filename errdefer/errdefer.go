@@ -6,7 +6,7 @@ type CloseFunc interface {
 	func() | func() error | func(context.Context) | func(context.Context) error
 }
 
-// Calls fn when *err is not nil.
+// Close calls fn when *err is not nil.
 // Returns an error returned from fn.
 func Close[F CloseFunc](err *error, fn F) error {
 	if *err == nil {
@@ -33,7 +33,7 @@ type CloseContextFunc interface {
 	func(context.Context) | func(context.Context) error
 }
 
-// Calls fn with provided Context when *err is not nil.
+// CloseContext calls fn with provided Context when *err is not nil.
 // Returns an error returned from fn.
 func CloseContext[F CloseContextFunc](ctx context.Context, err *error, fn F) error {
 	if *err == nil {

@@ -6,7 +6,7 @@ type Heap[E any] struct {
 	cmp  func(a, b E) int
 }
 
-// Creates a new Heap with elements of type E
+// New creates a new Heap with elements of type E
 // with the comparison function cmp.
 // cmp(a, b) should return a negative number when a < b, a positive number when
 // a > b and zero when a == b or a and b are incomparable in the sense of
@@ -18,23 +18,23 @@ func New[E any](cmp func(a, b E) int) *Heap[E] {
 	}
 }
 
-// Returns the element at the index i from the heap.
+// At returns the element at the index i from the heap.
 func (h *Heap[E]) At(i int) E {
 	return h.data[i]
 }
 
-// Changes the element at the index i in the heap.
+// Set changes the element at the index i in the heap.
 // Fix should be called afterwards if this change breaks heap ordering.
 func (h *Heap[E]) Set(i int, x E) {
 	h.data[i] = x
 }
 
-// Returns the number of elements in the heap.
+// Len returns the number of elements in the heap.
 func (h *Heap[E]) Len() int {
 	return len(h.data)
 }
 
-// Pushes the element x onto the heap.
+// Push pushes the element x onto the heap.
 func (h *Heap[E]) Push(x E) {
 	h.data = append(h.data, x)
 	h.up(len(h.data) - 1)
@@ -51,7 +51,7 @@ func (h *Heap[E]) Pop() E {
 	return h.pop()
 }
 
-// Removes and returns the element at index i from the heap.
+// Remove removes and returns the element at index i from the heap.
 func (h *Heap[E]) Remove(i int) E {
 	n := len(h.data) - 1
 	if i != n {
@@ -63,7 +63,7 @@ func (h *Heap[E]) Remove(i int) E {
 	return h.pop()
 }
 
-// Re-establishes the heap ordering after the element at index i has changed its value.
+// Fix re-establishes the heap ordering after the element at index i has changed its value.
 // Changing the value of the element at index i and then calling Fix is equivalent to,
 // but less expensive than, calling Remove(i) followed by a Push of the new value.
 func (h *Heap[E]) Fix(i int) {
@@ -84,7 +84,7 @@ func (h *Heap[E]) swap(i, j int) {
 	h.data[i], h.data[j] = h.data[j], h.data[i]
 }
 
-// Fixes heap ordering starting from index i and ending at index 0.
+// up fixes heap ordering starting from index i and ending at index 0.
 func (h *Heap[E]) up(i int) {
 	for {
 		p := (i - 1) / 2 // parent
@@ -96,7 +96,7 @@ func (h *Heap[E]) up(i int) {
 	}
 }
 
-// Fixes heap ordering starting from index i0 and ending at index n.
+// down fixes heap ordering starting from index i0 and ending at index n.
 // Returns false if the element at index i0 is not greater that its children
 // or has no children at all.
 func (h *Heap[E]) down(i0, n int) bool {

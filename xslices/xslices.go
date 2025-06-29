@@ -1,6 +1,6 @@
 package xslices
 
-// Removes the element s[i] from s, returning the modified slice.
+// FastDelete removes the element s[i] from s, returning the modified slice.
 // Panics if i > len(s).
 // Performs fast removal without preserving order of the elements.
 func FastDelete[S ~[]E, E any](s S, i int) S {

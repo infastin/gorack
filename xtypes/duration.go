@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-// time.Duration with additional day unit (`d`) during parsing and
-// JSON and Text (un)marshaling support.
+// Duration is time.Duration with additional day unit (`d`) during parsing
+// and with JSON and Text (un)marshaling support.
 type Duration time.Duration
 
 var errLeadingInt = errors.New("time: bad [0-9]*") // never printed

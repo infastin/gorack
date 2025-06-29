@@ -8,8 +8,6 @@ import (
 	"net/http"
 	"strconv"
 	texttemplate "text/template"
-
-	"github.com/infastin/gorack/fastconv"
 )
 
 // NoContent writes http headers with the given status code.
@@ -74,8 +72,8 @@ func XMLWithHeader(w http.ResponseWriter, code int, body any) {
 	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
 	w.WriteHeader(code)
 
-	w.Write(fastconv.Bytes(xml.Header)) //nolint:errcheck
-	xml.NewEncoder(w).Encode(body)      //nolint:errcheck
+	w.Write(toBytes(xml.Header))   //nolint:errcheck
+	xml.NewEncoder(w).Encode(body) //nolint:errcheck
 }
 
 // XML encodes body as xml and writes the output with the given status code

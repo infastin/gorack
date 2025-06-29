@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"reflect"
 	"strconv"
-
-	"github.com/infastin/gorack/fastconv"
 )
 
 type ParamLocation string
@@ -185,7 +183,7 @@ func (d *paramsDecoder) decodeValues(vs []string) error {
 		}
 	}
 	if unmarshaler != nil {
-		return unmarshaler.UnmarshalText(fastconv.Bytes(vs[0]))
+		return unmarshaler.UnmarshalText(toBytes(vs[0]))
 	}
 
 	switch rv.Kind() {

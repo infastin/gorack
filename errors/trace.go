@@ -4,7 +4,7 @@ import "sync/atomic"
 
 var numFrames atomic.Int64
 
-// Sets the number of frames a stack trace will contain.
+// SetTrace sets the number of frames a stack trace will contain.
 // If it's a zero then the stack trace won't be included in errors (default).
 // The number of frames can't be negative.
 func SetTrace(n int64) {

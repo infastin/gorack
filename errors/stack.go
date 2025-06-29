@@ -11,7 +11,7 @@ import (
 
 type Frame runtime.Frame
 
-// Formats the frame according to the fmt.Formatter interface.
+// Format formats the frame according to the fmt.Formatter interface.
 //
 //	%f    source file
 //	%d    source line
@@ -35,13 +35,13 @@ func (f *Frame) Format(s fmt.State, verb rune) {
 	}
 }
 
-// Formats a stacktrace frame as a text string.
+// String formats a stacktrace frame as a text string.
 // The output is the same as that of fmt.Sprintf("%x %f:%d", f).
 func (f *Frame) String() string {
 	return fmt.Sprintf("%s %s:%d", f.Func.Name(), f.File, f.Line)
 }
 
-// Formats a stacktrace frame as a text string.
+// MarshalText formats a stacktrace frame as a text string.
 // The output is the same as that of fmt.Sprintf("%x %f:%d", f).
 func (f Frame) MarshalText() ([]byte, error) {
 	return fmt.Appendf(nil, "%s %s:%d", f.Func.Name(), f.File, f.Line), nil
@@ -49,7 +49,7 @@ func (f Frame) MarshalText() ([]byte, error) {
 
 type StackTrace []uintptr
 
-// Formats the stack of Frames according to the fmt.Formatter interface.
+// Format formats the stack of Frames according to the fmt.Formatter interface.
 //
 //	%s   prints filename, function, and line number for each Frame in the stack.
 //	%v   equivalent to %s

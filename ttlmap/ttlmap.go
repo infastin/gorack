@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type item[K comparable, V any] struct {
+type element[K comparable, V any] struct {
 	key     K
 	value   V
 	expires time.Time
@@ -14,97 +14,97 @@ type item[K comparable, V any] struct {
 }
 
 type bucket[K comparable, V any] struct {
-	items       map[K]*item[K, V]
+	elems       map[K]*element[K, V]
 	newestEntry time.Time
 }
 
-// A map with expirable items.
+// Map is a map with expirable elements.
 type Map[K comparable, V any] struct {
-	items             map[K]*item[K, V]
+	elems             map[K]*element[K, V]
 	mu                sync.Mutex
 	ttl               time.Duration
 	buckets           []bucket[K, V]
 	nextCleanupBucket uint8
 }
 
-// Creates a map with expirable items.
-// Whenever key-value pair is inserted, a cleanup bucket is chosed
-// and inserted key-value pair is put into the bucket.
-// With an interval of `ttl / numBuckets` cleanup bucket is chosed and
-// every expired item in that bucket is removed from the map (and from the bucket).
+// New creates a new map with expirable elements.
+// Whenever a key-value pair is inserted, a cleanup bucket is chosed
+// and the inserted key-value pair is put into the bucket.
+// With the interval of `ttl / numBuckets` a cleanup bucket is chosed and
+// every expired element in that bucket is removed from the map (and from the bucket).
 func New[K comparable, V any](ttl time.Duration, numBuckets uint8) *Map[K, V] {
 	m := &Map[K, V]{
-		items:             make(map[K]*item[K, V]),
+		elems:             make(map[K]*element[K, V]),
 		mu:                sync.Mutex{},
 		ttl:               ttl,
 		buckets:           make([]bucket[K, V], numBuckets),
 		nextCleanupBucket: 0,
 	}
 	for i := 0; i < len(m.buckets); i++ {
-		m.buckets[i].items = make(map[K]*item[K, V])
+		m.buckets[i].elems = make(map[K]*element[K, V])
 	}
 	return m
 }
 
-// Puts key-value pair into the map.
+// Put puts an element into the map.
 func (m *Map[K, V]) Put(key K, value V) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	now := time.Now()
-	if item, ok := m.items[key]; ok {
-		m.removeFromBucket(item)
-		item.value = value
-		item.expires = now.Add(m.ttl)
-		m.addToBucket(item)
+	if elem, ok := m.elems[key]; ok {
+		m.removeFromBucket(elem)
+		elem.value = value
+		elem.expires = now.Add(m.ttl)
+		m.addToBucket(elem)
 		return
 	}
-	item := &item[K, V]{
+	elem := &element[K, V]{
 		key:     key,
 		value:   value,
 		expires: now.Add(m.ttl),
 	}
-	m.items[key] = item
-	m.addToBucket(item)
+	m.elems[key] = elem
+	m.addToBucket(elem)
 }
 
-// Looks up a key's value from the map.
-func (m *Map[K, V]) Get(key K) (value V, ok bool) {
+// Get retrieves an element from the map under the specified key.
+func (m *Map[K, V]) Get(key K) (value V, exists bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	item, ok := m.items[key]
-	if !ok {
+	elem, exists := m.elems[key]
+	if !exists {
 		return value, false
 	}
-	if time.Now().After(item.expires) {
-		m.removeItem(item)
+	if time.Now().After(elem.expires) {
+		m.removeElement(elem)
 		return value, false
 	}
-	return item.value, true
+	return elem.value, true
 }
 
-// Checks whether key is present in the map.
+// Has checks if an element under the specified key exists.
 func (m *Map[K, V]) Has(key K) bool {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	item, ok := m.items[key]
+	elem, ok := m.elems[key]
 	if !ok {
 		return false
 	}
-	if time.Now().After(item.expires) {
-		m.removeItem(item)
+	if time.Now().After(elem.expires) {
+		m.removeElement(elem)
 		return false
 	}
 	return true
 }
 
-// Updates existing element or inserts a new one using provided callback function.
+// Upsert updates an existing element or inserts a new one using provided callback function.
 func (m *Map[K, V]) Upsert(key K, cb func(exists bool, value V) V) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	itm, ok := m.items[key]
+	itm, ok := m.elems[key]
 	if !ok {
-		itm = &item[K, V]{key: key}
-		m.items[key] = itm
+		itm = &element[K, V]{key: key}
+		m.elems[key] = itm
 	} else {
 		m.removeFromBucket(itm)
 	}
@@ -113,42 +113,43 @@ func (m *Map[K, V]) Upsert(key K, cb func(exists bool, value V) V) {
 	m.addToBucket(itm)
 }
 
-// Updates existing item using provided callback function.
+// Update updates an existing element using provided callback function.
 func (m *Map[K, V]) Update(key K, cb func(value V) V) bool {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	item, ok := m.items[key]
+	elem, ok := m.elems[key]
 	if !ok {
 		return false
 	}
-	m.removeFromBucket(item)
-	item.value = cb(item.value)
-	item.expires = time.Now().Add(m.ttl)
-	m.addToBucket(item)
+	m.removeFromBucket(elem)
+	elem.value = cb(elem.value)
+	elem.expires = time.Now().Add(m.ttl)
+	m.addToBucket(elem)
 	return true
 }
 
-// Looks up a key's value from the map and removes it.
-func (m *Map[K, V]) GetAndRemove(key K) (value V, ok bool) {
+// GetAndRemove removes an element from the map and returns it.
+func (m *Map[K, V]) GetAndRemove(key K) (value V, exists bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	item, ok := m.items[key]
-	if !ok {
+	elem, exists := m.elems[key]
+	if !exists {
 		return value, false
 	}
-	m.removeItem(item)
-	if time.Now().After(item.expires) {
+	m.removeElement(elem)
+	if time.Now().After(elem.expires) {
 		return value, false
 	}
-	return item.value, true
+	return elem.value, true
 }
 
+// Remove removes an element from the map.
 func (m *Map[K, V]) Remove(key K) bool {
 	_, ok := m.GetAndRemove(key)
 	return ok
 }
 
-// Starts a cleanup loop.
+// Start starts a cleanup loop.
 func (m *Map[K, V]) Start(ctx context.Context) (stop func()) {
 	ctx, cancel := context.WithCancel(ctx)
 	doneCh := make(chan struct{})
@@ -172,8 +173,8 @@ func (m *Map[K, V]) Start(ctx context.Context) (stop func()) {
 					m.mu.Lock()
 				}
 			}
-			for _, item := range m.buckets[idx].items {
-				m.removeItem(item)
+			for _, elem := range m.buckets[idx].elems {
+				m.removeElement(elem)
 			}
 			m.nextCleanupBucket = (m.nextCleanupBucket + 1) % uint8(len(m.buckets))
 			m.mu.Unlock()
@@ -185,27 +186,27 @@ func (m *Map[K, V]) Start(ctx context.Context) (stop func()) {
 	}
 }
 
-// Removes a given item from the map.
-// NOTE: Has to be called with lock!
-func (m *Map[K, V]) removeItem(item *item[K, V]) {
-	delete(m.items, item.key)
-	m.removeFromBucket(item)
+// removeElement removes an element from the map.
+// WARN: has to be called with lock!
+func (m *Map[K, V]) removeElement(elem *element[K, V]) {
+	delete(m.elems, elem.key)
+	m.removeFromBucket(elem)
 }
 
-// Adds item to expire bucket so that it will be cleaned up when the time comes.
-// NOTE: Has to be called with lock!
-func (m *Map[K, V]) addToBucket(item *item[K, V]) {
+// addToBucket adds an element to the expire bucket so that it will be cleaned up when the time comes.
+// WARN: has to be called with lock!
+func (m *Map[K, V]) addToBucket(elem *element[K, V]) {
 	numBuckets := uint8(len(m.buckets))
 	idx := (numBuckets + m.nextCleanupBucket - 1) % numBuckets
-	item.bucket = idx
-	m.buckets[idx].items[item.key] = item
-	if m.buckets[idx].newestEntry.Before(item.expires) {
-		m.buckets[idx].newestEntry = item.expires
+	elem.bucket = idx
+	m.buckets[idx].elems[elem.key] = elem
+	if m.buckets[idx].newestEntry.Before(elem.expires) {
+		m.buckets[idx].newestEntry = elem.expires
 	}
 }
 
-// Removes item from its corresponding expire bucket.
-// NOTE: Has to be called with lock!
-func (m *Map[K, V]) removeFromBucket(item *item[K, V]) {
-	delete(m.buckets[item.bucket].items, item.key)
+// removeFromBucket removes an element from its corresponding expire bucket.
+// WARN: has to be called with lock!
+func (m *Map[K, V]) removeFromBucket(elem *element[K, V]) {
+	delete(m.buckets[elem.bucket].elems, elem.key)
 }

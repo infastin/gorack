@@ -8,7 +8,7 @@ import (
 	"github.com/infastin/gorack/xalg"
 )
 
-// Computes union of two slices.
+// Union computes union of two slices.
 func Union[E cmp.Ordered, Slice ~[]E](s ...Slice) Slice {
 	seqs := make([]iter.Seq[E], len(s))
 	for i := range s {
@@ -17,17 +17,17 @@ func Union[E cmp.Ordered, Slice ~[]E](s ...Slice) Slice {
 	return slices.Collect(xalg.Union(seqs...))
 }
 
-// Computes intersection of two slices.
+// Intersection computes intersection of two slices.
 func Intersection[E cmp.Ordered, Slice ~[]E](s1, s2 Slice) Slice {
 	return slices.Collect(xalg.Intersection(slices.Values(s1), slices.Values(s2)))
 }
 
-// Computes difference of two slices.
+// Difference computes difference of two slices.
 func Difference[E cmp.Ordered, Slice ~[]E](s1, s2 Slice) Slice {
 	return slices.Collect(xalg.Difference(slices.Values(s1), slices.Values(s2)))
 }
 
-// Computes symmetric difference of two slices.
+// SymmetricDifference computes symmetric difference of two slices.
 func SymmetricDifference[E cmp.Ordered, Slice ~[]E](s1, s2 Slice) (first, second Slice) {
 	for elem, typ := range xalg.SymmetricDifference(slices.Values(s1), slices.Values(s2)) {
 		switch typ {
