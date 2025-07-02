@@ -13,7 +13,7 @@ type Animal struct {
 }
 
 func TestMapCreation(t *testing.T) {
-	m := New[string]()
+	m := New[string, string]()
 	if m.shards == nil {
 		t.Error("map is nil")
 	}
@@ -23,7 +23,7 @@ func TestMapCreation(t *testing.T) {
 }
 
 func TestInsert(t *testing.T) {
-	m := New[Animal]()
+	m := New[string, Animal]()
 
 	elephant := Animal{"elephant"}
 	m.Set("elephant", elephant)
@@ -37,7 +37,7 @@ func TestInsert(t *testing.T) {
 }
 
 func TestInsertAbsent(t *testing.T) {
-	m := New[Animal]()
+	m := New[string, Animal]()
 
 	elephant := Animal{"elephant"}
 	m.SetIfAbsent("elephant", elephant)
@@ -52,7 +52,7 @@ func TestInsertAbsent(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	m := New[Animal]()
+	m := New[string, Animal]()
 
 	// Get a missing element.
 	val, ok := m.Get("Money")
@@ -77,7 +77,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestHas(t *testing.T) {
-	m := New[Animal]()
+	m := New[string, Animal]()
 
 	// Get a missing element.
 	if m.Has("Money") {
@@ -93,7 +93,7 @@ func TestHas(t *testing.T) {
 }
 
 func TestRemove(t *testing.T) {
-	m := New[Animal]()
+	m := New[string, Animal]()
 
 	monkey := Animal{"monkey"}
 	m.Set("monkey", monkey)
@@ -119,7 +119,7 @@ func TestRemove(t *testing.T) {
 }
 
 func TestRemoveCb(t *testing.T) {
-	m := New[Animal]()
+	m := New[string, Animal]()
 
 	monkey := Animal{"monkey"}
 	m.Set("monkey", monkey)
@@ -195,7 +195,7 @@ func TestRemoveCb(t *testing.T) {
 }
 
 func TestPop(t *testing.T) {
-	m := New[Animal]()
+	m := New[string, Animal]()
 
 	monkey := Animal{"monkey"}
 	m.Set("monkey", monkey)
@@ -224,7 +224,7 @@ func TestPop(t *testing.T) {
 }
 
 func TestCount(t *testing.T) {
-	m := New[Animal]()
+	m := New[string, Animal]()
 	for i := 0; i < 100; i++ {
 		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
 	}
@@ -234,7 +234,7 @@ func TestCount(t *testing.T) {
 }
 
 func TestIsEmpty(t *testing.T) {
-	m := New[Animal]()
+	m := New[string, Animal]()
 	if !m.IsEmpty() {
 		t.Error("new map must be empty")
 	}
@@ -245,7 +245,7 @@ func TestIsEmpty(t *testing.T) {
 }
 
 func TestClear(t *testing.T) {
-	m := New[Animal]()
+	m := New[string, Animal]()
 	// Insert 100 elements.
 	for i := 0; i < 100; i++ {
 		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
@@ -257,7 +257,7 @@ func TestClear(t *testing.T) {
 }
 
 func TestIter(t *testing.T) {
-	m := New[Animal]()
+	m := New[string, Animal]()
 	// Insert 100 elements.
 	for i := 0; i < 100; i++ {
 		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
@@ -277,7 +277,7 @@ func TestIter(t *testing.T) {
 }
 
 func TestSeq(t *testing.T) {
-	m := New[Animal]()
+	m := New[string, Animal]()
 	// Insert 100 elements.
 	for i := 0; i < 100; i++ {
 		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
@@ -296,7 +296,7 @@ func TestSeq(t *testing.T) {
 }
 
 func TestItems(t *testing.T) {
-	m := New[Animal]()
+	m := New[string, Animal]()
 	// Insert 100 elements.
 	for i := 0; i < 100; i++ {
 		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
@@ -307,7 +307,7 @@ func TestItems(t *testing.T) {
 }
 
 func TestKeys(t *testing.T) {
-	m := New[Animal]()
+	m := New[string, Animal]()
 	// Insert 100 elements.
 	for i := 0; i < 100; i++ {
 		m.Set(strconv.Itoa(i), Animal{strconv.Itoa(i)})
@@ -340,7 +340,7 @@ func TestRemoveFunc(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		m := New[Animal]()
+		m := New[string, Animal]()
 		for _, tc := range testcases {
 			m.Set(tc, Animal{tc})
 		}
@@ -383,7 +383,7 @@ func FuzzUpsert(f *testing.F) {
 		x := Animal{xName}
 		y := Animal{yName}
 
-		m := New[Animal]()
+		m := New[string, Animal]()
 
 		m.Upsert("upsert-x", x, cb)
 		if animal, ok := m.Get("upsert-x"); ok {
@@ -458,7 +458,7 @@ func FuzzUpdate(f *testing.F) {
 		x := Animal{xName}
 		y := Animal{yName}
 
-		m := New[Animal]()
+		m := New[string, Animal]()
 
 		m.Update("update-x", x, cb)
 		if _, ok := m.Get("update-x"); ok {
@@ -500,7 +500,7 @@ func FuzzUpdate(f *testing.F) {
 }
 
 func TestKeysWhenRemoving(t *testing.T) {
-	m := New[Animal]()
+	m := New[string, Animal]()
 	// Insert 100 elements.
 	const total = 100
 	for i := 0; i < total; i++ {
@@ -521,7 +521,7 @@ func TestKeysWhenRemoving(t *testing.T) {
 }
 
 func TestConcurrent(t *testing.T) {
-	m := New[int]()
+	m := New[string, int]()
 	ch := make(chan int)
 	const iterations = 1000
 	var a [iterations]int

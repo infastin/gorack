@@ -2,24 +2,37 @@ package cmap
 
 import (
 	"encoding/json"
+	"fmt"
 	"hash/maphash"
 	"iter"
 	"maps"
+	"reflect"
 	"sync"
+	"unsafe"
 )
 
-type options[K comparable] struct {
+type options struct {
 	shardCount   int
-	shardingFunc func(key K) uint64
+	shardingFunc any
 }
 
+// ShardingFunc is a function for sharding a map.
+type ShardingFunc[K comparable] func(key K) uint64
+
 // Option is used to configure concurrent map.
-type Option[K comparable] func(*options[K])
+type Option func(*options)
 
 // WithShardCount allows to set the number of shards in a map.
-func WithShardCount[K comparable](n int) Option[K] {
-	return func(o *options[K]) {
+func WithShardCount(n int) Option {
+	return func(o *options) {
 		o.shardCount = n
+	}
+}
+
+// WithShardingFunc allows to set the sharding function of a map.
+func WithShardingFunc[K comparable](fn ShardingFunc[K]) Option {
+	return func(o *options) {
+		o.shardingFunc = fn
 	}
 }
 
@@ -27,7 +40,7 @@ func WithShardCount[K comparable](n int) Option[K] {
 // To avoid lock bottlenecks this map is dived to several map shards.
 type ConcurrentMap[K comparable, V any] struct {
 	shards   []*shard[K, V]
-	sharding func(key K) uint64
+	sharding ShardingFunc[K]
 }
 
 type shard[K comparable, V any] struct {
@@ -36,25 +49,37 @@ type shard[K comparable, V any] struct {
 }
 
 // New creates a new concurrent map.
-func New[V any](opts ...Option[string]) ConcurrentMap[string, V] {
+func New[K comparable, V any](opts ...Option) ConcurrentMap[K, V] {
 	seed := maphash.MakeSeed()
-	sharding := func(key string) uint64 {
-		return maphash.String(seed, key)
+	var shardingFunc ShardingFunc[K]
+	if reflect.TypeFor[K]().Kind() == reflect.String {
+		shardingFunc = func(key K) uint64 {
+			return maphash.String(seed, *(*string)(unsafe.Pointer(&key)))
+		}
+	} else {
+		shardingFunc = func(key K) uint64 {
+			return maphash.Comparable(seed, key)
+		}
 	}
-	options := options[string]{
+	options := options{
 		shardCount:   32,
-		shardingFunc: sharding,
+		shardingFunc: shardingFunc,
 	}
 	for _, opt := range opts {
 		opt(&options)
 	}
-	m := ConcurrentMap[string, V]{
-		shards:   make([]*shard[string, V], options.shardCount),
-		sharding: options.shardingFunc,
+	shardingFunc, ok := options.shardingFunc.(ShardingFunc[K])
+	if !ok {
+		panic(fmt.Sprintf("cmap: invalid sharding function: expected %v, got %T",
+			reflect.TypeFor[ShardingFunc[K]](), options.shardingFunc))
+	}
+	m := ConcurrentMap[K, V]{
+		shards:   make([]*shard[K, V], options.shardCount),
+		sharding: shardingFunc,
 	}
 	for i := range m.shards {
-		m.shards[i] = &shard[string, V]{
-			items: make(map[string]V),
+		m.shards[i] = &shard[K, V]{
+			items: make(map[K]V),
 			mu:    sync.RWMutex{},
 		}
 	}
