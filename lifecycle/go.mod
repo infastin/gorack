@@ -1,3 +1,3 @@
 module github.com/infastin/gorack/lifecycle
 
-go 1.23.0
+go 1.24.0

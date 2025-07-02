@@ -15,7 +15,7 @@ type config struct {
 func defaultConfig() config {
 	return config{
 		stopTimeout: time.Minute,
-		logger:      slog.New(discardHandler{}),
+		logger:      slog.New(slog.DiscardHandler),
 	}
 }
 
