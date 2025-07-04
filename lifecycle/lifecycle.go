@@ -103,9 +103,9 @@ func (l *Lifecycle) Go(actor Actor) {
 				logger.Info("running start hook")
 				err := actor.Run(ctx)
 				if err != nil {
-					logger.Error("stop hook ran with failure", slog.String("error", err.Error()))
+					logger.Error("start hook ran with failure", slog.String("error", err.Error()))
 				} else {
-					logger.Info("stop hook ran successfully")
+					logger.Info("start hook ran successfully")
 				}
 				cancel(err)
 			}()
