@@ -39,7 +39,8 @@ func (h *handler) Handle(ctx context.Context, record slog.Record) error {
 			group = dict
 		}
 	}
-	ev := h.lg.WithLevel(logLevels[record.Level]).Ctx(ctx)
+	lg := h.lg
+	ev := lg.WithLevel(logLevels[record.Level]).Ctx(ctx)
 	if group == nil {
 		group = ev
 	}
