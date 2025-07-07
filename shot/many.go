@@ -82,20 +82,21 @@ func (m *Many) onExit() {
 // if the resource takes too much time to exit.
 // Canceling the context passed to this method doesn't affect the resource in any way.
 func (m *Many) Close(ctx context.Context) error {
-	if m.close() {
+	done := m.close()
+	if done == nil {
 		return nil
 	}
 
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
-	case <-m.done:
+	case <-done:
 	}
 
 	return nil
 }
 
-func (m *Many) close() bool {
+func (m *Many) close() (done <-chan struct{}) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -104,17 +105,17 @@ func (m *Many) close() bool {
 		m.state = StateClosed
 		m.cancel()
 		close(m.done)
-		return true
+		return nil
 	case StateStopped:
 		m.state = StateClosed
 		m.cancel()
-		return true
+		return nil
 	case StateClosed:
-		return true
+		return nil
 	}
 
 	m.cancel()
-	return false
+	return m.done
 }
 
 // Context returns the context of the resource.

@@ -85,7 +85,11 @@ func TestXor_Start_stop(t *testing.T) {
 				t.Errorf("%d'th goroutine: Start(): unexpected error: %s", i, err.Error())
 				return
 			}
-			stop()
+			defer stop()
+			if err := state.Context().Err(); err != nil {
+				t.Errorf("%d'th goroutine: Context().Err() is not nil: %s", i, err)
+				return
+			}
 		})
 	}
 

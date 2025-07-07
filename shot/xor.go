@@ -55,12 +55,13 @@ func (x *Xor) Start(ctx context.Context) (stop func(), err error) {
 retry:
 	switch x.state {
 	case StateRunning:
+		done := x.done
 		x.cancel()
 		x.mu.Unlock()
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()
-		case <-x.done:
+		case <-done:
 			x.mu.Lock()
 			goto retry
 		}
@@ -101,20 +102,21 @@ func (x *Xor) onExit() {
 // if the resource takes too much time to exit.
 // Canceling the context passed to this method doesn't affect the resource in any way.
 func (x *Xor) Stop(ctx context.Context) error {
-	if nowait, err := x.stop(); nowait {
+	done, err := x.stop()
+	if done == nil {
 		return err
 	}
 
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
-	case <-x.done:
+	case <-done:
 	}
 
 	return nil
 }
 
-func (x *Xor) stop() (bool, error) {
+func (x *Xor) stop() (done <-chan struct{}, err error) {
 	x.mu.Lock()
 	defer x.mu.Unlock()
 
@@ -123,15 +125,15 @@ func (x *Xor) stop() (bool, error) {
 		x.state = StateStopped
 		x.cancel()
 		close(x.done)
-		return true, nil
+		return nil, nil
 	case StateStopped:
-		return true, nil
+		return nil, nil
 	case StateClosed:
-		return true, ErrClosed
+		return nil, ErrClosed
 	}
 
 	x.cancel()
-	return false, nil
+	return x.done, nil
 }
 
 // Close transitions the resource into Closed state,
@@ -144,20 +146,21 @@ func (x *Xor) stop() (bool, error) {
 // if the resource takes too much time to exit.
 // Canceling the context passed to this method doesn't affect the resource in any way.
 func (x *Xor) Close(ctx context.Context) error {
-	if x.close() {
+	done := x.close()
+	if done == nil {
 		return nil
 	}
 
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
-	case <-x.done:
+	case <-done:
 	}
 
 	return nil
 }
 
-func (x *Xor) close() bool {
+func (x *Xor) close() (done <-chan struct{}) {
 	x.mu.Lock()
 	defer x.mu.Unlock()
 
@@ -166,19 +169,19 @@ func (x *Xor) close() bool {
 		x.state = StateClosed
 		x.cancel()
 		close(x.done)
-		return true
+		return nil
 	case StateStopped:
 		x.state = StateClosed
 		x.cancel()
-		return true
+		return nil
 	case StateClosed:
-		return true
+		return nil
 	}
 
 	x.quitting = true
 	x.cancel()
 
-	return false
+	return x.done
 }
 
 // Context returns the context of the resource.
