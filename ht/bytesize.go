@@ -123,7 +123,7 @@ func byteSizeString(byteSize, unit uint64) string {
 			result = append(result, 'B')
 		}
 	} else {
-		result = strconv.AppendUint(result, uint64(byteSize), 10)
+		result = strconv.AppendUint(result, byteSize, 10)
 		result = append(result, 'B')
 	}
 	return unsafe.String(unsafe.SliceData(result), len(result))
