@@ -14,6 +14,7 @@ func TestParseClock(t *testing.T) {
 	}{
 		{"15:04", ht.NewClock(15, 4, 0), false},
 		{"15:04:05", ht.NewClock(15, 4, 5), false},
+
 		{"15", ht.Clock{}, true},
 		{"15:", ht.Clock{}, true},
 		{"15:04:", ht.Clock{}, true},
