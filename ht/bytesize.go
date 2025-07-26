@@ -154,7 +154,7 @@ const (
 // - E, EiB - exbibyte
 //
 // Valid SI units are:
-// - kb, KB - kilobyte
+// - kB, KB - kilobyte
 // - MB - megabyte
 // - GB - gigabyte
 // - TB - terabyte
@@ -237,7 +237,7 @@ const (
 // - E, EiB - exbibyte
 //
 // Valid SI units are:
-// - kb, KB - kilobyte
+// - kB, KB - kilobyte
 // - MB - megabyte
 // - GB - gigabyte
 // - TB - terabyte
