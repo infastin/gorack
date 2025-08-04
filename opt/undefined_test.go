@@ -310,55 +310,6 @@ func TestUndefined_UnmarshalJSON(t *testing.T) {
 	}
 }
 
-func TestUndefined_MarshalText(t *testing.T) {
-	tests := []struct {
-		input    opt.Undefined[string]
-		expected string
-	}{
-		{opt.NewUndefined("foo", true), `foo`},
-		{opt.NewUndefined("", true), ``},
-		{opt.NewUndefined("foo", false), ``},
-		{opt.NewUndefined("", false), ``},
-	}
-
-	for _, tt := range tests {
-		got, err := tt.input.MarshalText()
-		if err != nil {
-			t.Errorf("unexpected error: input=%+v error=%s",
-				tt.input, err.Error())
-			continue
-		}
-		if tt.expected != string(got) {
-			t.Errorf("must be equal: input=%+v expected=%s got=%s",
-				tt.input, tt.expected, got)
-		}
-	}
-}
-
-func TestUndefined_UnmarshalText(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected opt.Undefined[string]
-	}{
-		{`foo`, opt.NewUndefined("foo", true)},
-		{``, opt.NewUndefined("", true)},
-		{`null`, opt.NewUndefined("null", true)},
-	}
-
-	for _, tt := range tests {
-		var got opt.Undefined[string]
-		if err := got.UnmarshalText([]byte(tt.input)); err != nil {
-			t.Errorf("unexpected error: input=%s error=%s",
-				tt.input, err.Error())
-			continue
-		}
-		if tt.expected != got {
-			t.Errorf("must be equal: input=%s expected=%+v got=%+v",
-				tt.input, tt.expected, got)
-		}
-	}
-}
-
 func TestUndefined_Scan(t *testing.T) {
 	tests := []struct {
 		input    opt.Undefined[string]

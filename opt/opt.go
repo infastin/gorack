@@ -1,5 +1,7 @@
 package opt
 
+import "github.com/infastin/gorack/opt/v2/internal"
+
 type getter[T any] interface {
 	Get() (value T, ok bool)
 }
@@ -20,7 +22,7 @@ func Ptr[T any](value T) *T {
 }
 
 func ZeroPtr[T any](value T) *T {
-	if isZero(value) {
+	if internal.IsZero(value) {
 		return nil
 	}
 	return Ptr(value)

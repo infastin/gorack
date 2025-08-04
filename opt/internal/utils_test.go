@@ -1,9 +1,11 @@
-package opt
+package internal_test
 
 import (
 	"image"
 	"testing"
 	"time"
+
+	"github.com/infastin/gorack/opt/v2/internal"
 )
 
 type Rect image.Rectangle
@@ -18,7 +20,7 @@ func (r *RectPtr) IsZero() bool {
 	return (*image.Rectangle)(r).Empty()
 }
 
-func Test_isZero_string(t *testing.T) {
+func TestIsZero_string(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected bool
@@ -29,7 +31,7 @@ func Test_isZero_string(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		got := isZero(tt.input)
+		got := internal.IsZero(tt.input)
 		if tt.expected != got {
 			t.Errorf("must be equal: input=%s expected=%v got=%v",
 				tt.input, tt.expected, got)
@@ -37,7 +39,7 @@ func Test_isZero_string(t *testing.T) {
 	}
 }
 
-func Test_isZero_Time(t *testing.T) {
+func TestIsZero_Time(t *testing.T) {
 	mst, err := time.LoadLocation("MST")
 	if err != nil {
 		t.Fatal(err)
@@ -54,7 +56,7 @@ func Test_isZero_Time(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		got := isZero(tt.input)
+		got := internal.IsZero(tt.input)
 		if tt.expected != got {
 			t.Errorf("must be equal: input=%v expected=%v got=%v",
 				tt.input, tt.expected, got)
@@ -62,7 +64,7 @@ func Test_isZero_Time(t *testing.T) {
 	}
 }
 
-func Test_isZero_Rect(t *testing.T) {
+func TestIsZero_Rect(t *testing.T) {
 	tests := []struct {
 		input    Rect
 		expected bool
@@ -75,7 +77,7 @@ func Test_isZero_Rect(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		got := isZero(tt.input)
+		got := internal.IsZero(tt.input)
 		if tt.expected != got {
 			t.Errorf("must be equal: input=%v expected=%v got=%v",
 				tt.input, tt.expected, got)
@@ -83,7 +85,7 @@ func Test_isZero_Rect(t *testing.T) {
 	}
 }
 
-func Test_isZero_PtrRect(t *testing.T) {
+func TestIsZero_PtrRect(t *testing.T) {
 	tests := []struct {
 		input    *Rect
 		expected bool
@@ -97,7 +99,7 @@ func Test_isZero_PtrRect(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		got := isZero(tt.input)
+		got := internal.IsZero(tt.input)
 		if tt.expected != got {
 			t.Errorf("must be equal: input=%v expected=%v got=%v",
 				tt.input, tt.expected, got)
@@ -105,7 +107,7 @@ func Test_isZero_PtrRect(t *testing.T) {
 	}
 }
 
-func Test_isZero_RectPtr(t *testing.T) {
+func TestIsZero_RectPtr(t *testing.T) {
 	tests := []struct {
 		input    RectPtr
 		expected bool
@@ -118,7 +120,7 @@ func Test_isZero_RectPtr(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		got := isZero(tt.input)
+		got := internal.IsZero(tt.input)
 		if tt.expected != got {
 			t.Errorf("must be equal: input=%v expected=%v got=%v",
 				tt.input, tt.expected, got)
@@ -126,17 +128,17 @@ func Test_isZero_RectPtr(t *testing.T) {
 	}
 }
 
-func Test_isZero_iface(t *testing.T) {
+func TestIsZero_iface(t *testing.T) {
 	tests := []struct {
-		input    isZeroer
+		input    internal.IsZeroer
 		expected bool
 	}{
 		{time.Date(0, time.January, 1, 0, 0, 0, 0, time.UTC), false},
 		{time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC), true},
 		{time.Time{}, true},
 
-		{Ptr(time.Date(0, time.January, 1, 0, 0, 0, 0, time.UTC)), false},
-		{Ptr(time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC)), true},
+		{makePtr(time.Date(0, time.January, 1, 0, 0, 0, 0, time.UTC)), false},
+		{makePtr(time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC)), true},
 		{&time.Time{}, true},
 		{(*time.Time)(nil), true},
 
@@ -155,10 +157,16 @@ func Test_isZero_iface(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		got := isZero(tt.input)
+		got := internal.IsZero(tt.input)
 		if tt.expected != got {
 			t.Errorf("must be equal: input=%v expected=%v got=%v",
 				tt.input, tt.expected, got)
 		}
 	}
+}
+
+func makePtr[T any](value T) *T {
+	ptr := new(T)
+	*ptr = value
+	return ptr
 }

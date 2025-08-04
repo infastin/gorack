@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
+
+	"github.com/infastin/gorack/opt/v2/internal"
 )
 
 type Zero[T any] struct {
@@ -19,7 +21,7 @@ func NewZero[T any](value T, valid bool) Zero[T] {
 }
 
 func ZeroFrom[T any](value T) Zero[T] {
-	return NewZero(value, !isZero(value))
+	return NewZero(value, !internal.IsZero(value))
 }
 
 func ZeroFromPtr[T any](value *T) Zero[T] {
@@ -47,7 +49,7 @@ func ZeroFromFuncPtr[T, U any](value *U, f func(*U) T) Zero[T] {
 }
 
 func (v *Zero[T]) Set(value T) {
-	v.V, v.Valid = value, !isZero(value)
+	v.V, v.Valid = value, !internal.IsZero(value)
 }
 
 func (v *Zero[T]) Reset() {
@@ -99,24 +101,8 @@ func (v *Zero[T]) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &v.V); err != nil {
 		return err
 	}
-	v.Valid = !isZero(v.V)
+	v.Valid = !internal.IsZero(v.V)
 
-	return nil
-}
-
-func (v Zero[T]) MarshalText() ([]byte, error) {
-	var value T
-	if v.Valid {
-		value = v.V
-	}
-	return marshalText(value)
-}
-
-func (v *Zero[T]) UnmarshalText(data []byte) error {
-	if err := unmarshalText(&v.V, data); err != nil {
-		return err
-	}
-	v.Valid = !isZero(v.V)
 	return nil
 }
 
@@ -128,6 +114,6 @@ func (v *Zero[T]) Scan(value any) error {
 	if err := (*sql.Null[T])(v).Scan(value); err != nil {
 		return err
 	}
-	v.Valid = !isZero(v.V)
+	v.Valid = !internal.IsZero(v.V)
 	return nil
 }

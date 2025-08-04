@@ -310,55 +310,6 @@ func TestNull_UnmarshalJSON(t *testing.T) {
 	}
 }
 
-func TestNull_MarshalText(t *testing.T) {
-	tests := []struct {
-		input    opt.Null[string]
-		expected string
-	}{
-		{opt.NewNull("foo", true), `foo`},
-		{opt.NewNull("", true), ``},
-		{opt.NewNull("foo", false), ``},
-		{opt.NewNull("", false), ``},
-	}
-
-	for _, tt := range tests {
-		got, err := tt.input.MarshalText()
-		if err != nil {
-			t.Errorf("unexpected error: input=%+v error=%s",
-				tt.input, err.Error())
-			continue
-		}
-		if tt.expected != string(got) {
-			t.Errorf("must be equal: input=%+v expected=%s got=%s",
-				tt.input, tt.expected, got)
-		}
-	}
-}
-
-func TestNull_UnmarshalText(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected opt.Null[string]
-	}{
-		{`foo`, opt.NewNull("foo", true)},
-		{``, opt.NewNull("", true)},
-		{`null`, opt.NewNull("null", true)},
-	}
-
-	for _, tt := range tests {
-		var got opt.Null[string]
-		if err := got.UnmarshalText([]byte(tt.input)); err != nil {
-			t.Errorf("unexpected error: input=%s error=%s",
-				tt.input, err.Error())
-			continue
-		}
-		if tt.expected != got {
-			t.Errorf("must be equal: input=%s expected=%+v got=%+v",
-				tt.input, tt.expected, got)
-		}
-	}
-}
-
 func TestNull_Scan(t *testing.T) {
 	tests := []struct {
 		input    opt.Null[string]

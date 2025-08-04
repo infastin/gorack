@@ -79,14 +79,14 @@ func TestZeroFrom(t *testing.T) {
 
 	t.Run("Rect", func(t *testing.T) {
 		tests := []struct {
-			input  opt.Rect
+			input  Rect
 			isZero bool
 		}{
-			{opt.Rect{image.Pt(0, 0), image.Pt(1, 1)}, false},
-			{opt.Rect{image.Pt(0, 1), image.Pt(1, 2)}, false},
-			{opt.Rect{image.Pt(0, 1), image.Pt(1, 1)}, true},
-			{opt.Rect{image.Pt(1, 1), image.Pt(1, 1)}, true},
-			{opt.Rect{}, true},
+			{Rect{image.Pt(0, 0), image.Pt(1, 1)}, false},
+			{Rect{image.Pt(0, 1), image.Pt(1, 2)}, false},
+			{Rect{image.Pt(0, 1), image.Pt(1, 1)}, true},
+			{Rect{image.Pt(1, 1), image.Pt(1, 1)}, true},
+			{Rect{}, true},
 		}
 
 		for _, tt := range tests {
@@ -101,14 +101,14 @@ func TestZeroFrom(t *testing.T) {
 
 	t.Run("RectPtr", func(t *testing.T) {
 		tests := []struct {
-			input  opt.RectPtr
+			input  RectPtr
 			isZero bool
 		}{
-			{opt.RectPtr{image.Pt(0, 0), image.Pt(1, 1)}, false},
-			{opt.RectPtr{image.Pt(0, 1), image.Pt(1, 2)}, false},
-			{opt.RectPtr{image.Pt(0, 1), image.Pt(1, 1)}, true},
-			{opt.RectPtr{image.Pt(1, 1), image.Pt(1, 1)}, true},
-			{opt.RectPtr{}, true},
+			{RectPtr{image.Pt(0, 0), image.Pt(1, 1)}, false},
+			{RectPtr{image.Pt(0, 1), image.Pt(1, 2)}, false},
+			{RectPtr{image.Pt(0, 1), image.Pt(1, 1)}, true},
+			{RectPtr{image.Pt(1, 1), image.Pt(1, 1)}, true},
+			{RectPtr{}, true},
 		}
 
 		for _, tt := range tests {
@@ -173,19 +173,19 @@ func TestZeroFromPtr(t *testing.T) {
 
 	t.Run("Rect", func(t *testing.T) {
 		tests := []struct {
-			input  *opt.Rect
+			input  *Rect
 			isZero bool
 		}{
-			{&opt.Rect{image.Pt(0, 0), image.Pt(1, 1)}, false},
-			{&opt.Rect{image.Pt(0, 1), image.Pt(1, 2)}, false},
-			{&opt.Rect{image.Pt(0, 1), image.Pt(1, 1)}, true},
-			{&opt.Rect{image.Pt(1, 1), image.Pt(1, 1)}, true},
-			{&opt.Rect{}, true},
+			{&Rect{image.Pt(0, 0), image.Pt(1, 1)}, false},
+			{&Rect{image.Pt(0, 1), image.Pt(1, 2)}, false},
+			{&Rect{image.Pt(0, 1), image.Pt(1, 1)}, true},
+			{&Rect{image.Pt(1, 1), image.Pt(1, 1)}, true},
+			{&Rect{}, true},
 			{nil, true},
 		}
 
 		for _, tt := range tests {
-			expected := opt.NewZero(opt.Deref(tt.input, opt.Rect{}), !tt.isZero)
+			expected := opt.NewZero(opt.Deref(tt.input, Rect{}), !tt.isZero)
 			got := opt.ZeroFromPtr(tt.input)
 			if expected != got {
 				t.Errorf("must be equal: input=%v expected=%+v got=%+v",
@@ -196,19 +196,19 @@ func TestZeroFromPtr(t *testing.T) {
 
 	t.Run("RectPtr", func(t *testing.T) {
 		tests := []struct {
-			input  *opt.RectPtr
+			input  *RectPtr
 			isZero bool
 		}{
-			{&opt.RectPtr{image.Pt(0, 0), image.Pt(1, 1)}, false},
-			{&opt.RectPtr{image.Pt(0, 1), image.Pt(1, 2)}, false},
-			{&opt.RectPtr{image.Pt(0, 1), image.Pt(1, 1)}, true},
-			{&opt.RectPtr{image.Pt(1, 1), image.Pt(1, 1)}, true},
-			{&opt.RectPtr{}, true},
+			{&RectPtr{image.Pt(0, 0), image.Pt(1, 1)}, false},
+			{&RectPtr{image.Pt(0, 1), image.Pt(1, 2)}, false},
+			{&RectPtr{image.Pt(0, 1), image.Pt(1, 1)}, true},
+			{&RectPtr{image.Pt(1, 1), image.Pt(1, 1)}, true},
+			{&RectPtr{}, true},
 			{nil, true},
 		}
 
 		for _, tt := range tests {
-			expected := opt.NewZero(opt.Deref(tt.input, opt.RectPtr{}), !tt.isZero)
+			expected := opt.NewZero(opt.Deref(tt.input, RectPtr{}), !tt.isZero)
 			got := opt.ZeroFromPtr(tt.input)
 			if expected != got {
 				t.Errorf("must be equal: input=%v expected=%+v got=%+v",
@@ -425,34 +425,34 @@ func TestZero_Set(t *testing.T) {
 
 	t.Run("Rect", func(t *testing.T) {
 		tests := []struct {
-			input    opt.Zero[opt.Rect]
-			value    opt.Rect
-			expected opt.Zero[opt.Rect]
+			input    opt.Zero[Rect]
+			value    Rect
+			expected opt.Zero[Rect]
 		}{
 			{
-				input:    opt.NewZero(opt.Rect{image.Pt(1, 1), image.Pt(1, 1)}, false),
-				value:    opt.Rect{image.Pt(0, 1), image.Pt(1, 2)},
-				expected: opt.NewZero(opt.Rect{image.Pt(0, 1), image.Pt(1, 2)}, true),
+				input:    opt.NewZero(Rect{image.Pt(1, 1), image.Pt(1, 1)}, false),
+				value:    Rect{image.Pt(0, 1), image.Pt(1, 2)},
+				expected: opt.NewZero(Rect{image.Pt(0, 1), image.Pt(1, 2)}, true),
 			},
 			{
-				input:    opt.NewZero(opt.Rect{image.Pt(0, 0), image.Pt(1, 1)}, true),
-				value:    opt.Rect{image.Pt(0, 1), image.Pt(1, 2)},
-				expected: opt.NewZero(opt.Rect{image.Pt(0, 1), image.Pt(1, 2)}, true),
+				input:    opt.NewZero(Rect{image.Pt(0, 0), image.Pt(1, 1)}, true),
+				value:    Rect{image.Pt(0, 1), image.Pt(1, 2)},
+				expected: opt.NewZero(Rect{image.Pt(0, 1), image.Pt(1, 2)}, true),
 			},
 			{
-				input:    opt.NewZero(opt.Rect{image.Pt(0, 0), image.Pt(1, 1)}, true),
-				value:    opt.Rect{image.Pt(0, 1), image.Pt(1, 1)},
-				expected: opt.NewZero(opt.Rect{image.Pt(0, 1), image.Pt(1, 1)}, false),
+				input:    opt.NewZero(Rect{image.Pt(0, 0), image.Pt(1, 1)}, true),
+				value:    Rect{image.Pt(0, 1), image.Pt(1, 1)},
+				expected: opt.NewZero(Rect{image.Pt(0, 1), image.Pt(1, 1)}, false),
 			},
 			{
-				input:    opt.NewZero(opt.Rect{image.Pt(0, 0), image.Pt(1, 1)}, true),
-				value:    opt.Rect{image.Pt(0, 1), image.Pt(1, 1)},
-				expected: opt.NewZero(opt.Rect{image.Pt(0, 1), image.Pt(1, 1)}, false),
+				input:    opt.NewZero(Rect{image.Pt(0, 0), image.Pt(1, 1)}, true),
+				value:    Rect{image.Pt(0, 1), image.Pt(1, 1)},
+				expected: opt.NewZero(Rect{image.Pt(0, 1), image.Pt(1, 1)}, false),
 			},
 			{
-				input:    opt.NewZero(opt.Rect{image.Pt(1, 1), image.Pt(1, 1)}, false),
-				value:    opt.Rect{image.Pt(0, 0), image.Pt(0, 0)},
-				expected: opt.NewZero(opt.Rect{image.Pt(0, 0), image.Pt(0, 0)}, false),
+				input:    opt.NewZero(Rect{image.Pt(1, 1), image.Pt(1, 1)}, false),
+				value:    Rect{image.Pt(0, 0), image.Pt(0, 0)},
+				expected: opt.NewZero(Rect{image.Pt(0, 0), image.Pt(0, 0)}, false),
 			},
 		}
 
@@ -715,140 +715,6 @@ func TestZero_UnmarshalJSON(t *testing.T) {
 		for _, tt := range tests {
 			var got opt.Zero[time.Time]
 			if err := got.UnmarshalJSON([]byte(tt.input)); err != nil {
-				t.Errorf("unexpected error: input=%s error=%s",
-					tt.input, err.Error())
-				continue
-			}
-			if tt.expected != got {
-				t.Errorf("must be equal: input=%s expected=%+v got=%+v",
-					tt.input, tt.expected, got)
-			}
-		}
-	})
-}
-
-func TestZero_MarshalText(t *testing.T) {
-	t.Run("string", func(t *testing.T) {
-		tests := []struct {
-			input    opt.Zero[string]
-			expected string
-		}{
-			{opt.NewZero("foo", true), `foo`},
-			{opt.NewZero("", true), ``},
-			{opt.NewZero("foo", false), ``},
-			{opt.NewZero("", false), ``},
-		}
-
-		for _, tt := range tests {
-			got, err := tt.input.MarshalText()
-			if err != nil {
-				t.Errorf("unexpected error: input=%+v error=%s",
-					tt.input, err.Error())
-				continue
-			}
-			if tt.expected != string(got) {
-				t.Errorf("must be equal: input=%+v expected=%s got=%s",
-					tt.input, tt.expected, got)
-			}
-		}
-	})
-
-	t.Run("Time", func(t *testing.T) {
-		mst, err := time.LoadLocation("MST")
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		tests := []struct {
-			input    opt.Zero[time.Time]
-			expected string
-		}{
-			{
-				input:    opt.NewZero(time.Date(2006, time.January, 2, 15, 04, 05, 0, mst), true),
-				expected: `2006-01-02T15:04:05-07:00`,
-			},
-			{
-				input:    opt.NewZero(time.Date(0, time.January, 1, 0, 0, 0, 0, time.UTC), true),
-				expected: `0000-01-01T00:00:00Z`,
-			},
-			{
-				input:    opt.NewZero(time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC), false),
-				expected: `0001-01-01T00:00:00Z`,
-			},
-			{
-				input:    opt.NewZero(time.Time{}, false),
-				expected: `0001-01-01T00:00:00Z`,
-			},
-		}
-
-		for _, tt := range tests {
-			got, err := tt.input.MarshalText()
-			if err != nil {
-				t.Errorf("unexpected error: input=%+v error=%s",
-					tt.input, err.Error())
-				continue
-			}
-			if tt.expected != string(got) {
-				t.Errorf("must be equal: input=%+v expected=%s got=%s",
-					tt.input, tt.expected, got)
-			}
-		}
-	})
-}
-
-func TestZero_UnmarshalText(t *testing.T) {
-	t.Run("string", func(t *testing.T) {
-		tests := []struct {
-			input    string
-			expected opt.Zero[string]
-		}{
-			{`foo`, opt.NewZero("foo", true)},
-			{``, opt.NewZero("", false)},
-			{`null`, opt.NewZero("null", true)},
-		}
-
-		for _, tt := range tests {
-			var got opt.Zero[string]
-			if err := got.UnmarshalText([]byte(tt.input)); err != nil {
-				t.Errorf("unexpected error: input=%s error=%s",
-					tt.input, err.Error())
-				continue
-			}
-			if tt.expected != got {
-				t.Errorf("must be equal: input=%s expected=%+v got=%+v",
-					tt.input, tt.expected, got)
-			}
-		}
-	})
-
-	t.Run("Time", func(t *testing.T) {
-		unnamedMST := time.FixedZone("", -7*60*60)
-
-		tests := []struct {
-			input    string
-			expected opt.Zero[time.Time]
-		}{
-			{
-				input:    `2006-01-02T15:04:05-07:00`,
-				expected: opt.NewZero(time.Date(2006, time.January, 2, 15, 04, 05, 0, unnamedMST), true),
-			},
-			{
-				input:    `0000-01-01T00:00:00Z`,
-				expected: opt.NewZero(time.Date(0, time.January, 1, 0, 0, 0, 0, time.UTC), true),
-			},
-			{
-				input:    `0001-01-01T00:00:00Z`,
-				expected: opt.NewZero(time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC), false),
-			},
-			{
-				input:    `0001-01-01T00:00:00Z`,
-				expected: opt.NewZero(time.Time{}, false),
-			},
-		}
-
-		for _, tt := range tests {
-			var got opt.Zero[time.Time]
-			if err := got.UnmarshalText([]byte(tt.input)); err != nil {
 				t.Errorf("unexpected error: input=%s error=%s",
 					tt.input, err.Error())
 				continue

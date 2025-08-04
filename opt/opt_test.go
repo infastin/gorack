@@ -9,6 +9,18 @@ import (
 	"github.com/infastin/gorack/opt/v2"
 )
 
+type Rect image.Rectangle
+
+func (r Rect) IsZero() bool {
+	return image.Rectangle(r).Empty()
+}
+
+type RectPtr image.Rectangle
+
+func (r *RectPtr) IsZero() bool {
+	return (*image.Rectangle)(r).Empty()
+}
+
 func PtrEqual[T comparable](p1, p2 *T) bool {
 	if (p1 == nil) != (p2 == nil) {
 		return false
@@ -119,18 +131,18 @@ func TestZeroPtr(t *testing.T) {
 
 	t.Run("Rect", func(t *testing.T) {
 		tests := []struct {
-			input opt.Rect
+			input Rect
 			isNil bool
 		}{
-			{opt.Rect{image.Pt(0, 0), image.Pt(1, 1)}, false},
-			{opt.Rect{image.Pt(0, 1), image.Pt(1, 2)}, false},
-			{opt.Rect{image.Pt(0, 1), image.Pt(1, 1)}, true},
-			{opt.Rect{image.Pt(1, 1), image.Pt(1, 1)}, true},
-			{opt.Rect{}, true},
+			{Rect{image.Pt(0, 0), image.Pt(1, 1)}, false},
+			{Rect{image.Pt(0, 1), image.Pt(1, 2)}, false},
+			{Rect{image.Pt(0, 1), image.Pt(1, 1)}, true},
+			{Rect{image.Pt(1, 1), image.Pt(1, 1)}, true},
+			{Rect{}, true},
 		}
 
 		for _, tt := range tests {
-			var expected *opt.Rect
+			var expected *Rect
 			if !tt.isNil {
 				expected = opt.Ptr(tt.input)
 			}
@@ -144,18 +156,18 @@ func TestZeroPtr(t *testing.T) {
 
 	t.Run("RectPtr", func(t *testing.T) {
 		tests := []struct {
-			input opt.RectPtr
+			input RectPtr
 			isNil bool
 		}{
-			{opt.RectPtr{image.Pt(0, 0), image.Pt(1, 1)}, false},
-			{opt.RectPtr{image.Pt(0, 1), image.Pt(1, 2)}, false},
-			{opt.RectPtr{image.Pt(0, 1), image.Pt(1, 1)}, true},
-			{opt.RectPtr{image.Pt(1, 1), image.Pt(1, 1)}, true},
-			{opt.RectPtr{}, true},
+			{RectPtr{image.Pt(0, 0), image.Pt(1, 1)}, false},
+			{RectPtr{image.Pt(0, 1), image.Pt(1, 2)}, false},
+			{RectPtr{image.Pt(0, 1), image.Pt(1, 1)}, true},
+			{RectPtr{image.Pt(1, 1), image.Pt(1, 1)}, true},
+			{RectPtr{}, true},
 		}
 
 		for _, tt := range tests {
-			var expected *opt.RectPtr
+			var expected *RectPtr
 			if !tt.isNil {
 				expected = opt.Ptr(tt.input)
 			}

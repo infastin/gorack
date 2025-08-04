@@ -1,4 +1,4 @@
-package opt
+package internal
 
 import (
 	"encoding"
@@ -8,17 +8,17 @@ import (
 	"unsafe"
 )
 
-type isZeroer interface {
+type IsZeroer interface {
 	IsZero() bool
 }
 
 var (
-	isZeroerType        = reflect.TypeFor[isZeroer]()
+	isZeroerType        = reflect.TypeFor[IsZeroer]()
 	textMarshalerType   = reflect.TypeFor[encoding.TextMarshaler]()
 	textUnmarshalerType = reflect.TypeFor[encoding.TextUnmarshaler]()
 )
 
-func isZero(v any) bool {
+func IsZero(v any) bool {
 	rv := reflect.ValueOf(v)
 	rt := rv.Type()
 
@@ -27,11 +27,11 @@ func isZero(v any) bool {
 		case reflect.Interface:
 			return rv.IsNil() ||
 				(rv.Elem().Kind() == reflect.Pointer && rv.Elem().IsNil()) ||
-				rv.Interface().(isZeroer).IsZero()
+				rv.Interface().(IsZeroer).IsZero()
 		case reflect.Pointer:
-			return rv.IsNil() || rv.Interface().(isZeroer).IsZero()
+			return rv.IsNil() || rv.Interface().(IsZeroer).IsZero()
 		default:
-			return rv.Interface().(isZeroer).IsZero()
+			return rv.Interface().(IsZeroer).IsZero()
 		}
 	} else if reflect.PointerTo(rt).Implements(isZeroerType) {
 		if !rv.CanAddr() {
@@ -39,13 +39,13 @@ func isZero(v any) bool {
 			tmp.Set(rv)
 			rv = tmp
 		}
-		return rv.Addr().Interface().(isZeroer).IsZero()
+		return rv.Addr().Interface().(IsZeroer).IsZero()
 	}
 
 	return reflect.ValueOf(v).IsZero()
 }
 
-func marshalText(v any) ([]byte, error) {
+func MarshalText(v any) ([]byte, error) {
 	return valueMarshalText(reflect.ValueOf(v))
 }
 
@@ -80,7 +80,7 @@ func valueMarshalText(rv reflect.Value) ([]byte, error) {
 	}
 }
 
-func unmarshalText(v any, data []byte) error {
+func UnmarshalText(v any, data []byte) error {
 	return valueUnmarshalText(reflect.ValueOf(v), data)
 }
 

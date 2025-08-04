@@ -103,21 +103,6 @@ func (v *Null[T]) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (v Null[T]) MarshalText() ([]byte, error) {
-	if !v.Valid {
-		return []byte{}, nil
-	}
-	return marshalText(v.V)
-}
-
-func (v *Null[T]) UnmarshalText(data []byte) error {
-	if err := unmarshalText(&v.V, data); err != nil {
-		return err
-	}
-	v.Valid = true
-	return nil
-}
-
 func (v Null[T]) Value() (driver.Value, error) {
 	return sql.Null[T](v).Value()
 }
