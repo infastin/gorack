@@ -3,6 +3,8 @@ package textopt
 import (
 	"database/sql"
 	"database/sql/driver"
+	"reflect"
+	"unsafe"
 
 	"github.com/infastin/gorack/opt/v2"
 	"github.com/infastin/gorack/opt/v2/internal"
@@ -74,10 +76,23 @@ func (v Null[T]) MarshalText() ([]byte, error) {
 }
 
 func (v *Null[T]) UnmarshalText(data []byte) error {
+	if reflect.TypeFor[T]().Kind() == reflect.String {
+		*(*string)(unsafe.Pointer(&v.V)) = string(data)
+		v.Valid = true
+		return nil
+	}
+
+	if internal.IsNullText(data) {
+		var zero T
+		v.V, v.Valid = zero, false
+		return nil
+	}
+
 	if err := internal.UnmarshalText(&v.V, data); err != nil {
 		return err
 	}
 	v.Valid = true
+
 	return nil
 }
 

@@ -33,6 +33,30 @@ func TestZero_MarshalText(t *testing.T) {
 		}
 	})
 
+	t.Run("int", func(t *testing.T) {
+		tests := []struct {
+			input    textopt.Zero[int]
+			expected string
+		}{
+			{textopt.NewZero(0, false), `0`},
+			{textopt.NewZero(0, true), `0`},
+			{textopt.NewZero(42, true), `42`},
+		}
+
+		for _, tt := range tests {
+			got, err := tt.input.MarshalText()
+			if err != nil {
+				t.Errorf("unexpected error: input=%+v error=%s",
+					tt.input, err.Error())
+				continue
+			}
+			if tt.expected != string(got) {
+				t.Errorf("must be equal: input=%+v expected=%s got=%s",
+					tt.input, tt.expected, got)
+			}
+		}
+	})
+
 	t.Run("Time", func(t *testing.T) {
 		mst, err := time.LoadLocation("MST")
 		if err != nil {
@@ -89,6 +113,31 @@ func TestZero_UnmarshalText(t *testing.T) {
 
 		for _, tt := range tests {
 			var got textopt.Zero[string]
+			if err := got.UnmarshalText([]byte(tt.input)); err != nil {
+				t.Errorf("unexpected error: input=%s error=%s",
+					tt.input, err.Error())
+				continue
+			}
+			if tt.expected != got {
+				t.Errorf("must be equal: input=%s expected=%+v got=%+v",
+					tt.input, tt.expected, got)
+			}
+		}
+	})
+
+	t.Run("int", func(t *testing.T) {
+		tests := []struct {
+			input    string
+			expected textopt.Zero[int]
+		}{
+			{``, textopt.NewZero(0, false)},
+			{`null`, textopt.NewZero(0, false)},
+			{`0`, textopt.NewZero(0, false)},
+			{`42`, textopt.NewZero(42, true)},
+		}
+
+		for _, tt := range tests {
+			var got textopt.Zero[int]
 			if err := got.UnmarshalText([]byte(tt.input)); err != nil {
 				t.Errorf("unexpected error: input=%s error=%s",
 					tt.input, err.Error())

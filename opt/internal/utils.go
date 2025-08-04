@@ -145,3 +145,8 @@ func valueUnmarshalText(rv reflect.Value, data []byte) error {
 		return fmt.Errorf("opt: unsupported type: %s", rt.String())
 	}
 }
+
+func IsNullText(data []byte) bool {
+	text := unsafe.String(unsafe.SliceData(data), len(data))
+	return text == "" || text == "null"
+}
