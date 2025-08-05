@@ -24,7 +24,8 @@ func New(lg zerolog.Logger) slog.Handler {
 }
 
 func (h *handler) Enabled(_ context.Context, level slog.Level) bool {
-	return logLevels[level] >= h.lg.GetLevel()
+	lvl := logLevels[level]
+	return lvl >= h.lg.GetLevel() && lvl >= zerolog.GlobalLevel()
 }
 
 func (h *handler) Handle(ctx context.Context, record slog.Record) error {
