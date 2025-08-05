@@ -37,6 +37,16 @@ func objectFromZerolog(ev *zerolog.Event) *object {
 	}
 }
 
+func (o *object) close() *zerolog.Event {
+	current := o
+	for current.parent != nil {
+		parent := current.parent
+		parent.dict.Dict(current.key, current.dict)
+		current.parent, current = nil, parent
+	}
+	return current.dict
+}
+
 func (o *object) AddArray(key string, marshaler zapcore.ArrayMarshaler) error {
 	arr := newArray()
 	if err := marshaler.MarshalLogArray(arr); err != nil {
@@ -51,7 +61,7 @@ func (o *object) AddObject(key string, marshaler zapcore.ObjectMarshaler) error 
 	if err := marshaler.MarshalLogObject(obj); err != nil {
 		return err
 	}
-	o.dict.Dict(key, obj.unwrap())
+	o.dict.Dict(key, obj.close())
 	return nil
 }
 
@@ -154,14 +164,4 @@ func (o *object) OpenNamespace(key string) {
 		key:  key,
 		dict: zerolog.Dict(),
 	}
-}
-
-func (o *object) unwrap() *zerolog.Event {
-	current := o
-	for current.parent != nil {
-		parent := current.parent
-		parent.dict.Dict(current.key, current.dict)
-		current.parent, current = nil, parent
-	}
-	return current.dict
 }

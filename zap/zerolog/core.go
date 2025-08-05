@@ -107,13 +107,13 @@ func ctxField(ctx zerolog.Context, field *zapcore.Field) zerolog.Context {
 		ctx = ctx.Object(field.Key, objectMarshalerFunc(func(ev *zerolog.Event) {
 			obj := objectFromZerolog(ev)
 			_ = field.Interface.(zapcore.ObjectMarshaler).MarshalLogObject(obj)
-			obj.unwrap()
+			obj.close()
 		}))
 	case zapcore.InlineMarshalerType:
 		ctx = ctx.EmbedObject(objectMarshalerFunc(func(ev *zerolog.Event) {
 			obj := objectFromZerolog(ev)
 			_ = field.Interface.(zapcore.ObjectMarshaler).MarshalLogObject(obj)
-			obj.unwrap()
+			obj.close()
 		}))
 	case zapcore.BinaryType:
 		ctx = ctx.Str(field.Key, base64.StdEncoding.EncodeToString(field.Interface.([]byte)))
@@ -206,7 +206,7 @@ func eventField(ev *zerolog.Event, field *zapcore.Field) (err error) {
 			if err = field.Interface.(zapcore.ObjectMarshaler).MarshalLogObject(obj); err != nil {
 				return
 			}
-			obj.unwrap()
+			obj.close()
 		}))
 	case zapcore.InlineMarshalerType:
 		ev.EmbedObject(objectMarshalerFunc(func(ev *zerolog.Event) {
@@ -214,7 +214,7 @@ func eventField(ev *zerolog.Event, field *zapcore.Field) (err error) {
 			if err = field.Interface.(zapcore.ObjectMarshaler).MarshalLogObject(obj); err != nil {
 				return
 			}
-			obj.unwrap()
+			obj.close()
 		}))
 	case zapcore.BinaryType:
 		ev.Str(field.Key, base64.StdEncoding.EncodeToString(field.Interface.([]byte)))

@@ -27,6 +27,10 @@ func arrayFromZerolog(arr *zerolog.Array) *array {
 	return &array{arr: arr}
 }
 
+func (a *array) unwrap() *zerolog.Array {
+	return a.arr
+}
+
 func (a *array) AppendBool(value bool) {
 	a.arr.Bool(value)
 }
@@ -109,7 +113,7 @@ func (a *array) AppendTime(value time.Time) {
 
 func (*array) AppendArray(marshaler zapcore.ArrayMarshaler) error {
 	// ???
-	return errors.New("not supported")
+	return errors.New("nested arrays are not supported by zerolog")
 }
 
 func (a *array) AppendObject(marshaler zapcore.ObjectMarshaler) error {
@@ -117,15 +121,11 @@ func (a *array) AppendObject(marshaler zapcore.ObjectMarshaler) error {
 	if err := marshaler.MarshalLogObject(obj); err != nil {
 		return err
 	}
-	a.arr.Dict(obj.unwrap())
+	a.arr.Dict(obj.close())
 	return nil
 }
 
 func (a *array) AppendReflected(value any) error {
 	a.arr.Interface(value)
 	return nil
-}
-
-func (a *array) unwrap() *zerolog.Array {
-	return a.arr
 }
