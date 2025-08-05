@@ -24,3 +24,4 @@ applications in Golang.
 - [xchan](https://pkg.go.dev/github.com/infastin/gorack/xchan)
 - [xhttp](https://pkg.go.dev/github.com/infastin/gorack/xhttp)
 - [xslices](https://pkg.go.dev/github.com/infastin/gorack/xslices)
+- [zapzerolog](https://pkg.go.dev/github.com/infastin/gorack/zap/zerolog)
