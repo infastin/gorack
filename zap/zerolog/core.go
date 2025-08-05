@@ -22,21 +22,17 @@ var logLevels = map[zapcore.Level]zerolog.Level{
 }
 
 type core struct {
-	lg            zerolog.Logger
-	copyTimestamp bool
-	copyCaller    bool
-	copyStack     bool
+	lg  zerolog.Logger
+	cfg *config
 }
 
 func New(lg zerolog.Logger, opts ...Option) zapcore.Core {
 	c := &core{
-		lg:            lg,
-		copyTimestamp: false,
-		copyCaller:    false,
-		copyStack:     false,
+		lg:  lg,
+		cfg: defaultConfig(),
 	}
 	for _, opt := range opts {
-		opt(c)
+		opt(c.cfg)
 	}
 	return c
 }
@@ -48,10 +44,8 @@ func (c *core) Enabled(level zapcore.Level) bool {
 
 func (c *core) With(fields []zapcore.Field) zapcore.Core {
 	return &core{
-		lg:            ctxFields(c.lg.With(), fields).Logger(),
-		copyTimestamp: c.copyTimestamp,
-		copyCaller:    c.copyCaller,
-		copyStack:     c.copyStack,
+		lg:  ctxFields(c.lg.With(), fields).Logger(),
+		cfg: c.cfg,
 	}
 }
 
@@ -64,13 +58,16 @@ func (c *core) Check(entry zapcore.Entry, ce *zapcore.CheckedEntry) *zapcore.Che
 
 func (c *core) Write(entry zapcore.Entry, fields []zapcore.Field) error {
 	ev := c.lg.WithLevel(logLevels[entry.Level])
-	if c.copyTimestamp {
+	if entry.LoggerName != "" && c.cfg.nameKey != "" {
+		ev.Str(c.cfg.nameKey, entry.LoggerName)
+	}
+	if c.cfg.copyTimestamp {
 		ev.Time(zerolog.TimestampFieldName, entry.Time)
 	}
-	if entry.Stack != "" && c.copyStack {
+	if entry.Stack != "" && c.cfg.copyStack {
 		ev.Str(zerolog.ErrorStackFieldName, entry.Stack)
 	}
-	if entry.Caller.Defined && c.copyCaller {
+	if entry.Caller.Defined && c.cfg.copyCaller {
 		ev.Str(zerolog.CallerFieldName,
 			zerolog.CallerMarshalFunc(entry.Caller.PC, entry.Caller.File, entry.Caller.Line))
 	}
